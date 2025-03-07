@@ -1,0 +1,66 @@
+# Node modules
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Logs
+*.log
+*.log.*
+
+# Expo & Metro Bundler
+.expo/
+.expo-shared/
+.bundle/
+dist/
+web-build/
+.expo-go/
+
+# macOS files
+.DS_Store
+
+# Editor directories and files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# TypeScript build artifacts
+*.tsbuildinfo
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Babel & ESLint
+babel.config.js
+.eslintcache
+
+# Expo EAS Build
+build/
+.eas/
+
+# Android & iOS build artifacts (if using Bare Workflow)
+android/app/build/
+android/.gradle/
+android/.idea/
+ios/Pods/
+ios/build/
+ios/.expo/
+
+# Firebase service account keys (if applicable)
+firebase-service-account.json
+
+# Generated files
+*.keystore
+*.p8
+*.jks
+*.pem
+*.p12
+*.key
+*.mobileprovision
