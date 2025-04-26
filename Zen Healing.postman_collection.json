@@ -1,0 +1,214 @@
+{
+	"info": {
+		"_postman_id": "7a4cc4e7-1798-47eb-9428-2d3a87015254",
+		"name": "Zen Healing",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "32990253"
+	},
+	"item": [
+		{
+			"name": "Doctor",
+			"item": [
+				{
+					"name": "All Doctors",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Dr. John Doe\",\r\n    \"email\": \"shammughal711@gmail.com\",\r\n    \"phone\": \"1234567890\",\r\n    \"speciality_id\": 1,\r\n    \"location_id\": 1,\r\n    \"password\": \"password123\",\r\n    \"address\":\"abc\",\r\n    \"location\":1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{local}}/api/doctors/v1"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Doctor",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Dr. John Doe\",\r\n  \"email\": \"shammughal711@gmail.com\",\r\n  \"phone\": \"12345678\",\r\n  \"address\": \"123 Street, City\",\r\n  \"status\": \"pending\",\r\n  \"speciality_id\": 1,\r\n  \"symptoms\": [1] ,\r\n  \"location_id\": 1,\r\n  \"password\":12345678\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{local}}/api/doctors/v1/doctors"
+					},
+					"response": []
+				},
+				{
+					"name": "Doctor Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\":\"shammughal711@gmail.com\",\r\n    \"password\":12345678\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{local}}/api/doctor/login"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Appointments",
+			"item": [
+				{
+					"name": "All Appointments",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{local}}/api/appointments/"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Appointment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"doctor_id\": 34,\r\n    \"name\":\"Appointment demo\",\r\n    \"booking_date\": \"2023-10-15\",\r\n    \"status\":\"pending\",\r\n    \"email\":\"shammughal711@gmail.com\",\r\n    \"phone\":123123213,\r\n\"booking_time\":\"01:09:23\",\r\n\"message\":\"hello\"\r\n    \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{local}}/api/appointments"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Speciality",
+			"item": [
+				{
+					"name": "All Specialities",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": "{{local}}/api/v1/specialities"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Symptoms",
+			"item": [
+				{
+					"name": "All Symptoms",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{local}}/api/v1/symptoms"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Location",
+			"item": [
+				{
+					"name": "All Locations",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{local}}/api/v1/locations"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Contact",
+			"item": [
+				{
+					"name": "Contact form",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"subject\": \"Test Contact\",\n    \"message\": \"This is a test message\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{local}}/api/v1/contact"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Articles",
+			"item": [
+				{
+					"name": "All Articles",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Specific Article",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
