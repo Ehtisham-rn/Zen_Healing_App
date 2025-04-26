@@ -99,6 +99,7 @@ const OnboardingStack = () => {
 
 // Main App Navigator
 const AppNavigator = () => {
+  const dispatch = useDispatch();
   const onboardingCompleted = useSelector(state => state.app?.onboarding?.completed);
 
   return (

@@ -90,20 +90,27 @@ export const ZEN_HEALING = {
   
   // App colors - should match your design system
   COLORS: {
-    PRIMARY: '#4CAF50',     // Green for healing/health
-    SECONDARY: '#2196F3',   // Blue for calm/peace
-    ACCENT: '#FF9800',      // Orange for energy
-    SUCCESS: '#00C853',
-    WARNING: '#FFD600',
-    ERROR: '#FF3D00',
+    PRIMARY: '#38B6E3',     // Bright sky blue (HSL: 195, 82%, 58%)
+    SECONDARY: '#1A5D8A',   // Darker blue for contrast
+    TERTIARY: '#7ED4F6',    // Lighter blue for accents
+    ACCENT: '#FF9248',      // Warm orange (complementary to blue)
+    SUCCESS: '#4CD964',     // Green for success states
+    WARNING: '#FFCC00',     // Yellow for warnings
+    ERROR: '#FF3B30',       // Red for errors
     TEXT: {
-      PRIMARY: '#212121',
-      SECONDARY: '#757575',
-      DISABLED: '#9E9E9E',
+      PRIMARY: '#333333',
+      SECONDARY: '#666666',
+      TERTIARY: '#999999',
+      DISABLED: '#CCCCCC',
+      LIGHT: '#FFFFFF',
     },
     BACKGROUND: {
       PRIMARY: '#FFFFFF',
-      SECONDARY: '#F5F5F5',
+      SECONDARY: '#F7FBFD',  // Very light blue tint
+      TERTIARY: '#EAF6FC',   // Light blue background
+      DARK: '#333333',
     },
+    BORDER: '#E0E0E0',
+    SHADOW: 'rgba(56, 182, 227, 0.15)',  // Primary color shadow
   },
 }; 

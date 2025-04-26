@@ -297,4 +297,8 @@ export const selectLocations = (state) => state.doctor.locations;
 export const selectDoctorFilters = (state) => state.doctor.filters;
 export const selectCurrentDoctor = (state) => state.doctor.currentDoctor;
 export const selectDoctorLoading = (state) => state.doctor.loading;
-export const selectDoctorErrors = (state) => state.doctor.error; 
+export const selectDoctorErrors = (state) => state.doctor.error;
+
+// Selector for featured doctors (where feature=1)
+export const selectFeaturedDoctors = (state) => 
+  state.doctor.doctorsList.filter(doctor => doctor.feature === 1); 

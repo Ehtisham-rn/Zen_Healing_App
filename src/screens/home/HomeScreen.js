@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { ZEN_HEALING } from '../../constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,17 +8,37 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { STORAGE_KEYS } from '../../constants';
+import { updateOnboarding } from '../../state/slices/appSlice';
+import GradientView from '../../components/GradientView';
+
+// Import our custom components
+import CardSection from '../../components/CardSection';
+import CategoryCard from '../../components/CategoryCard';
+import PractitionerCard from '../../components/PractitionerCard';
+import AppointmentCard from '../../components/AppointmentCard';
+import ArticleCard from '../../components/ArticleCard';
+import FloatingActionButton from '../../components/FloatingActionButton';
+import DoctorDetailsModal from '../../components/DoctorDetailsModal';
 
 const HomeScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const { 
     allDoctors, 
+    featuredDoctors,
     specialities, 
     symptoms,
     locations,
     initializeData, 
-    isInitialized 
+    isInitialized,
+    getSpecialityById,
+    getLocationById
   } = useDoctors();
+  
+  // State for doctor details modal
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
   // Initialize data on first render
   useEffect(() => {
@@ -26,6 +46,82 @@ const HomeScreen = ({ navigation }) => {
       initializeData();
     }
   }, [isInitialized, initializeData]);
+
+  // Function to reset onboarding state and return to onboarding screens
+  const resetOnboarding = async () => {
+    try {
+      // Clear the onboarding completed flag from AsyncStorage
+      await AsyncStorage.removeItem(STORAGE_KEYS.ONBOARDING_COMPLETED);
+      
+      // Update Redux state to mark onboarding as not completed
+      dispatch(updateOnboarding({ completed: false }));
+      
+      // Navigate to the onboarding stack
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'OnboardingStack' }],
+      });
+    } catch (error) {
+      console.error('Failed to reset onboarding:', error);
+    }
+  };
+
+  // Modal handlers
+  const handleOpenModal = (doctor) => {
+    setSelectedDoctor(doctor);
+    setModalVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalVisible(false);
+  };
+
+  // Navigation handlers
+  const handleSeeAllAppointments = () => {
+    // Navigate to appointments screen
+    navigation.navigate('AppointmentsScreen');
+  };
+
+  const handleSeeAllPractitioners = () => {
+    // Navigate to practitioners screen
+    navigation.navigate('PractitionersScreen');
+  };
+
+  const handleSeeAllArticles = () => {
+    // Navigate to articles screen
+    navigation.navigate('ArticlesScreen');
+  };
+
+  const handleCategoryPress = (category) => {
+    // Navigate to category details
+    navigation.navigate('CategoryScreen', { category });
+  };
+
+  const handleAppointmentPress = (appointment) => {
+    // Navigate to appointment details
+    navigation.navigate('AppointmentDetailScreen', { appointment });
+  };
+
+  const handlePractitionerPress = (practitioner) => {
+    // Open modal with doctor details
+    handleOpenModal(practitioner);
+  };
+
+  const handleBookAppointment = (doctor) => {
+    // Navigate to booking screen with selected doctor
+    setModalVisible(false);
+    navigation.navigate('BookAppointmentScreen', { doctor });
+  };
+
+  const handleArticlePress = (article) => {
+    // Navigate to article details
+    navigation.navigate('ArticleDetailScreen', { article });
+  };
+
+  const handleQuickBookPress = () => {
+    // Navigate to quick booking screen
+    navigation.navigate('BookAppointmentScreen');
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -39,7 +135,25 @@ const HomeScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Reset Onboarding Button */}
+        {/* <GradientView
+          colors={[ZEN_HEALING.COLORS.PRIMARY, ZEN_HEALING.COLORS.SECONDARY]}
+          style={styles.resetOnboardingButton}
+        >
+          <TouchableOpacity 
+            style={styles.resetOnboardingContent}
+            onPress={resetOnboarding}
+          >
+            <Text style={styles.resetOnboardingText}>View Onboarding Screens</Text>
+            <Ionicons name="chevron-forward" size={18} color="white" style={styles.resetOnboardingIcon} />
+          </TouchableOpacity>
+        </GradientView> */}
+
         {/* Search Bar */}
         <TouchableOpacity style={styles.searchBar}>
           <Ionicons 
@@ -51,208 +165,152 @@ const HomeScreen = ({ navigation }) => {
           <Text style={styles.searchPlaceholder}>Search for practitioners...</Text>
         </TouchableOpacity>
 
-        {/* Quick Categories */}
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Find by Category</Text>
+        {/* Categories Section */}
+        <CardSection 
+          title="Find by Category" 
+          showSeeAll={false}
+        >
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.categoriesContainer}
           >
-            <TouchableOpacity style={styles.categoryCard}>
-              <View style={[styles.categoryIcon, { backgroundColor: '#E3F2FD' }]}>
-                <MaterialCommunityIcons 
-                  name="yoga" 
-                  size={30} 
-                  color={ZEN_HEALING.COLORS.PRIMARY} 
-                />
-              </View>
-              <Text style={styles.categoryName}>Yoga</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.categoryCard}>
-              <View style={[styles.categoryIcon, { backgroundColor: '#E8F5E9' }]}>
-                <MaterialCommunityIcons 
-                  name="meditation" 
-                  size={30} 
-                  color={ZEN_HEALING.COLORS.PRIMARY} 
-                />
-              </View>
-              <Text style={styles.categoryName}>Meditation</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.categoryCard}>
-              <View style={[styles.categoryIcon, { backgroundColor: '#FFF3E0' }]}>
-                <FontAwesome5 
-                  name="hands" 
-                  size={30} 
-                  color={ZEN_HEALING.COLORS.PRIMARY} 
-                />
-              </View>
-              <Text style={styles.categoryName}>Acupuncture</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.categoryCard}>
-              <View style={[styles.categoryIcon, { backgroundColor: '#F3E5F5' }]}>
-                <MaterialCommunityIcons 
-                  name="food-apple" 
-                  size={30} 
-                  color={ZEN_HEALING.COLORS.PRIMARY} 
-                />
-              </View>
-              <Text style={styles.categoryName}>Nutrition</Text>
-            </TouchableOpacity>
+            <CategoryCard 
+              title="Yoga" 
+              iconName="body-outline" 
+              backgroundColor="#E3F2FD"
+              onPress={() => handleCategoryPress('Yoga')}
+            />
+            <CategoryCard 
+              title="Meditation" 
+              iconName="medkit-outline" 
+              backgroundColor="#E8F5E9"
+              onPress={() => handleCategoryPress('Meditation')}
+            />
+            <CategoryCard 
+              title="Acupuncture" 
+              iconName="fitness-outline" 
+              backgroundColor="#FFF3E0"
+              onPress={() => handleCategoryPress('Acupuncture')}
+            />
+            <CategoryCard 
+              title="Nutrition" 
+              iconName="nutrition-outline" 
+              backgroundColor="#F3E5F5"
+              onPress={() => handleCategoryPress('Nutrition')}
+            />
           </ScrollView>
-        </View>
+        </CardSection>
 
-        {/* Upcoming Appointments */}
-        <View style={styles.sectionContainer}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Upcoming Appointments</Text>
-            <TouchableOpacity>
-              <Text style={styles.seeAllText}>See All</Text>
-            </TouchableOpacity>
-          </View>
-
-          <TouchableOpacity style={styles.appointmentCard}>
-            <View style={styles.appointmentCardHeader}>
-              <Text style={styles.appointmentDate}>Today, 2:00 PM</Text>
-              <View style={styles.appointmentStatusBadge}>
-                <Text style={styles.appointmentStatusText}>Confirmed</Text>
-              </View>
-            </View>
-            <View style={styles.appointmentDetails}>
-              <View style={styles.doctorAvatarContainer}>
-                <Ionicons name="person" size={30} color="#fff" style={styles.doctorAvatar} />
-              </View>
-              <View style={styles.appointmentInfo}>
-                <Text style={styles.doctorName}>Dr. Sarah Johnson</Text>
-                <Text style={styles.speciality}>Holistic Nutrition</Text>
-              </View>
-            </View>
-            <View style={styles.appointmentActions}>
-              <TouchableOpacity style={styles.rescheduleButton}>
-                <Text style={styles.rescheduleText}>Reschedule</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.cancelButton}>
-                <Text style={styles.cancelText}>Cancel</Text>
-              </TouchableOpacity>
-            </View>
-          </TouchableOpacity>
+        {/* Upcoming Appointments Section */}
+        <CardSection 
+          title="Upcoming Appointments" 
+          showSeeAll={true}
+          onSeeAllPress={handleSeeAllAppointments}
+        >
+          <AppointmentCard
+            practitionerName="Dr. Sarah Johnson"
+            speciality="Holistic Nutrition"
+            date="Today"
+            time="2:00 PM"
+            status="upcoming"
+            onPress={() => handleAppointmentPress({
+              id: '1',
+              practitionerName: 'Dr. Sarah Johnson',
+              speciality: 'Holistic Nutrition',
+              date: 'Today',
+              time: '2:00 PM',
+              status: 'upcoming'
+            })}
+          />
 
           <View style={styles.noAppointments}>
             <Text style={styles.noAppointmentsText}>No other upcoming appointments</Text>
           </View>
-        </View>
+        </CardSection>
 
-        {/* Featured Practitioners */}
-        <View style={styles.sectionContainer}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Featured Practitioners</Text>
-            <TouchableOpacity>
-              <Text style={styles.seeAllText}>See All</Text>
-            </TouchableOpacity>
-          </View>
-
+        {/* Featured Practitioners Section */}
+        <CardSection 
+          title="Featured Practitioners" 
+          showSeeAll={true}
+          onSeeAllPress={handleSeeAllPractitioners}
+        >
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.practitionersContainer}
           >
-            <TouchableOpacity style={styles.practitionerCard}>
-              <Image 
-                source={require('../../../assets/welcome.png')} 
-                style={styles.practitionerImage}
-              />
-              <Text style={styles.practitionerName}>Dr. Mark Wilson</Text>
-              <Text style={styles.practitionerSpeciality}>Acupuncture</Text>
-              <View style={styles.practitionerRating}>
-                <FontAwesome 
-                  name="star" 
-                  size={12} 
-                  color={ZEN_HEALING.COLORS.ACCENT} 
-                  style={styles.starIcon}
+            {featuredDoctors.length > 0 ? (
+              featuredDoctors.map((doctor) => (
+                <PractitionerCard
+                  key={doctor.id}
+                  name={doctor.name}
+                  speciality={doctor.speciality ? doctor.speciality.name : getSpecialityById(doctor.speciality_id)}
+                  rating="4.8"
+                  imageUri={doctor.image_url}
+                  status={doctor.status}
+                  onPress={() => handlePractitionerPress(doctor)}
+                  onBookPress={() => handleBookAppointment(doctor)}
                 />
-                <Text style={styles.ratingText}>4.9</Text>
+              ))
+            ) : (
+              <View style={styles.noFeaturedDoctors}>
+                <Text style={styles.noFeaturedDoctorsText}>No featured practitioners available</Text>
               </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.practitionerCard}>
-              <Image 
-                source={require('../../../assets/welcome.png')} 
-                style={styles.practitionerImage}
-              />
-              <Text style={styles.practitionerName}>Dr. Amelia Chen</Text>
-              <Text style={styles.practitionerSpeciality}>Yoga Therapy</Text>
-              <View style={styles.practitionerRating}>
-                <FontAwesome 
-                  name="star" 
-                  size={12} 
-                  color={ZEN_HEALING.COLORS.ACCENT} 
-                  style={styles.starIcon}
-                />
-                <Text style={styles.ratingText}>4.8</Text>
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.practitionerCard}>
-              <Image 
-                source={require('../../../assets/welcome.png')} 
-                style={styles.practitionerImage}
-              />
-              <Text style={styles.practitionerName}>Dr. John Davis</Text>
-              <Text style={styles.practitionerSpeciality}>Meditation</Text>
-              <View style={styles.practitionerRating}>
-                <FontAwesome 
-                  name="star" 
-                  size={12} 
-                  color={ZEN_HEALING.COLORS.ACCENT} 
-                  style={styles.starIcon}
-                />
-                <Text style={styles.ratingText}>4.7</Text>
-              </View>
-            </TouchableOpacity>
+            )}
           </ScrollView>
-        </View>
+        </CardSection>
 
         {/* Wellness Articles */}
-        <View style={[styles.sectionContainer, { marginBottom: 20 }]}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Wellness Articles</Text>
-            <TouchableOpacity>
-              <Text style={styles.seeAllText}>See All</Text>
-            </TouchableOpacity>
-          </View>
+        <CardSection 
+          title="Wellness Articles" 
+          showSeeAll={true}
+          onSeeAllPress={handleSeeAllArticles}
+          style={{ marginBottom: 75 }}
+        >
+          <ArticleCard
+            title="Benefits of Mindfulness Meditation"
+            excerpt="Discover how daily mindfulness practice can reduce stress and improve overall well-being."
+            date="June 15, 2023"
+            category="Meditation"
+            readTime={5}
+            onPress={() => handleArticlePress({
+              id: '1',
+              title: 'Benefits of Mindfulness Meditation',
+              excerpt: 'Discover how daily mindfulness practice can reduce stress and improve overall well-being.',
+              date: 'June 15, 2023',
+              category: 'Meditation',
+              readTime: 5
+            })}
+          />
 
-          <TouchableOpacity style={styles.articleCard}>
-            <Image 
-              source={require('../../../assets/welcome.png')}
-              style={styles.articleImage}
-            />
-            <View style={styles.articleContent}>
-              <Text style={styles.articleTitle}>Benefits of Mindfulness Meditation</Text>
-              <Text style={styles.articleExcerpt}>
-                Discover how daily mindfulness practice can reduce stress and improve overall well-being.
-              </Text>
-              <Text style={styles.articleDate}>June 15, 2023</Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.articleCard}>
-            <Image 
-              source={require('../../../assets/welcome.png')}
-              style={styles.articleImage}
-            />
-            <View style={styles.articleContent}>
-              <Text style={styles.articleTitle}>Holistic Approaches to Stress Management</Text>
-              <Text style={styles.articleExcerpt}>
-                Learn about natural techniques to manage stress and anxiety without medication.
-              </Text>
-              <Text style={styles.articleDate}>June 10, 2023</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
+          <ArticleCard
+            title="Holistic Approaches to Stress Management"
+            excerpt="Learn about natural techniques to manage stress and anxiety without medication."
+            date="June 10, 2023"
+            category="Wellness"
+            readTime={7}
+            onPress={() => handleArticlePress({
+              id: '2',
+              title: 'Holistic Approaches to Stress Management',
+              excerpt: 'Learn about natural techniques to manage stress and anxiety without medication.',
+              date: 'June 10, 2023',
+              category: 'Wellness',
+              readTime: 7
+            })}
+          />
+        </CardSection>
       </ScrollView>
+
+      {/* Doctor Details Modal */}
+      <DoctorDetailsModal
+        visible={modalVisible}
+        onClose={handleCloseModal}
+        doctor={selectedDoctor}
+        onBookPress={handleBookAppointment}
+        getSpecialityById={getSpecialityById}
+        getLocationById={getLocationById}
+      />
     </SafeAreaView>
   );
 };
@@ -290,6 +348,9 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 24,
   },
+  scrollContent: {
+    paddingBottom: 70,
+  },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -306,132 +367,13 @@ const styles = StyleSheet.create({
     color: ZEN_HEALING.COLORS.TEXT.SECONDARY,
     fontSize: 14,
   },
-  sectionContainer: {
-    marginTop: 24,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: ZEN_HEALING.COLORS.TEXT.PRIMARY,
-  },
-  seeAllText: {
-    color: ZEN_HEALING.COLORS.PRIMARY,
-    fontSize: 14,
-  },
   categoriesContainer: {
     paddingVertical: 8,
     paddingRight: 24,
   },
-  categoryCard: {
-    alignItems: 'center',
-    marginRight: 24,
-  },
-  categoryIcon: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  categoryName: {
-    fontSize: 14,
-    color: ZEN_HEALING.COLORS.TEXT.PRIMARY,
-  },
-  appointmentCard: {
-    backgroundColor: ZEN_HEALING.COLORS.BACKGROUND.SECONDARY,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-  },
-  appointmentCardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  appointmentDate: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: ZEN_HEALING.COLORS.TEXT.PRIMARY,
-  },
-  appointmentStatusBadge: {
-    backgroundColor: '#E8F5E9',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  appointmentStatusText: {
-    fontSize: 12,
-    color: ZEN_HEALING.COLORS.SUCCESS,
-    fontWeight: 'bold',
-  },
-  appointmentDetails: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  doctorAvatarContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: ZEN_HEALING.COLORS.PRIMARY,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  doctorAvatar: {
-    width: 30,
-    height: 30,
-  },
-  appointmentInfo: {
-    flex: 1,
-  },
-  doctorName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: ZEN_HEALING.COLORS.TEXT.PRIMARY,
-    marginBottom: 4,
-  },
-  speciality: {
-    fontSize: 14,
-    color: ZEN_HEALING.COLORS.TEXT.SECONDARY,
-  },
-  appointmentActions: {
-    flexDirection: 'row',
-  },
-  rescheduleButton: {
-    flex: 1,
-    backgroundColor: ZEN_HEALING.COLORS.PRIMARY,
-    paddingVertical: 10,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginRight: 8,
-  },
-  rescheduleText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  cancelButton: {
-    flex: 1,
-    backgroundColor: 'transparent',
-    paddingVertical: 10,
-    borderRadius: 8,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: ZEN_HEALING.COLORS.TEXT.SECONDARY,
-  },
-  cancelText: {
-    color: ZEN_HEALING.COLORS.TEXT.SECONDARY,
-    fontWeight: 'bold',
-    fontSize: 14,
+  practitionersContainer: {
+    paddingVertical: 8,
+    paddingRight: 16,
   },
   noAppointments: {
     alignItems: 'center',
@@ -441,74 +383,33 @@ const styles = StyleSheet.create({
     color: ZEN_HEALING.COLORS.TEXT.SECONDARY,
     fontSize: 14,
   },
-  practitionersContainer: {
-    paddingVertical: 8,
-    paddingRight: 16,
+  noFeaturedDoctors: {
+    alignItems: 'center',
+    padding: 16,
+    width: 260, // Match the width of PractitionerCard
   },
-  practitionerCard: {
-    width: 150,
-    borderRadius: 12,
-    overflow: 'hidden',
-    backgroundColor: ZEN_HEALING.COLORS.BACKGROUND.SECONDARY,
-    marginRight: 16,
-  },
-  practitionerImage: {
-    width: '100%',
-    height: 120,
-  },
-  practitionerName: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: ZEN_HEALING.COLORS.TEXT.PRIMARY,
-    marginTop: 8,
-    marginHorizontal: 8,
-  },
-  practitionerSpeciality: {
-    fontSize: 12,
+  noFeaturedDoctorsText: {
     color: ZEN_HEALING.COLORS.TEXT.SECONDARY,
-    marginHorizontal: 8,
+    fontSize: 14,
   },
-  practitionerRating: {
+  resetOnboardingButton: {
+    borderRadius: 12,
+    marginBottom: 16,
+    overflow: 'hidden',
+  },
+  resetOnboardingContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    margin: 8,
+    justifyContent: 'center',
+    paddingVertical: 14,
   },
-  starIcon: {
-    marginRight: 4,
-  },
-  ratingText: {
-    fontSize: 12,
-    color: ZEN_HEALING.COLORS.TEXT.PRIMARY,
-  },
-  articleCard: {
-    flexDirection: 'row',
-    backgroundColor: ZEN_HEALING.COLORS.BACKGROUND.SECONDARY,
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginBottom: 16,
-  },
-  articleImage: {
-    width: 100,
-    height: '100%',
-  },
-  articleContent: {
-    flex: 1,
-    padding: 16,
-  },
-  articleTitle: {
-    fontSize: 14,
+  resetOnboardingText: {
+    color: 'white',
     fontWeight: 'bold',
-    color: ZEN_HEALING.COLORS.TEXT.PRIMARY,
-    marginBottom: 4,
+    fontSize: 16,
   },
-  articleExcerpt: {
-    fontSize: 12,
-    color: ZEN_HEALING.COLORS.TEXT.SECONDARY,
-    marginBottom: 8,
-  },
-  articleDate: {
-    fontSize: 10,
-    color: ZEN_HEALING.COLORS.TEXT.DISABLED,
+  resetOnboardingIcon: {
+    marginLeft: 8,
   },
 });
 

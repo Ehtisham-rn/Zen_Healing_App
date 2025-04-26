@@ -19,6 +19,7 @@ import {
   selectDoctorFilters,
   selectDoctorLoading,
   selectDoctorErrors,
+  selectFeaturedDoctors,
 } from '../state/slices/doctorSlice';
 
 /**
@@ -31,6 +32,7 @@ const useDoctors = () => {
   // Select data from Redux store
   const allDoctors = useSelector(selectAllDoctors);
   const filteredDoctors = useSelector(selectFilteredDoctors);
+  const featuredDoctors = useSelector(selectFeaturedDoctors);
   const specialities = useSelector(selectSpecialities);
   const symptoms = useSelector(selectSymptoms);
   const locations = useSelector(selectLocations);
@@ -119,6 +121,7 @@ const useDoctors = () => {
     // Data
     allDoctors,
     filteredDoctors,
+    featuredDoctors,
     specialities,
     symptoms,
     locations,

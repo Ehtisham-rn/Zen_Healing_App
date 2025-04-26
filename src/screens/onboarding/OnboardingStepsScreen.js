@@ -13,6 +13,8 @@ import { ZEN_HEALING } from '../../constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
 import { updateOnboarding } from '../../state/slices/appSlice';
+import GradientView from '../../components/GradientView';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const { width } = Dimensions.get('window');
 
@@ -23,18 +25,24 @@ const onboardingSteps = [
     title: 'Find Your Practitioner',
     description: 'Browse our extensive network of holistic health practitioners by specialty, symptom, or location.',
     image: require('../../../assets/welcome.png'),
+    iconName: 'search',
+    backgroundColor: '#EAF6FC',
   },
   {
     id: '2',
     title: 'Book Appointments',
     description: 'Schedule appointments with your preferred practitioners at times that work for you.',
     image: require('../../../assets/welcome.png'),
+    iconName: 'calendar',
+    backgroundColor: '#E0F2F7',
   },
   {
     id: '3',
     title: 'Track Your Wellness',
     description: 'Keep track of your appointments, receive reminders, and manage your wellness journey all in one place.',
     image: require('../../../assets/welcome.png'),
+    iconName: 'pulse',
+    backgroundColor: '#D5EDF3',
   },
 ];
 
@@ -67,13 +75,83 @@ const OnboardingStepsScreen = ({ navigation }) => {
     }
   };
 
+  // Skip onboarding and go to home
+  const skipOnboarding = () => {
+    dispatch(updateOnboarding({ completed: true }));
+    navigation.replace('Home');
+  };
+
+  // Interpolate background color
+  const backgroundColor = scrollX.interpolate({
+    inputRange: onboardingSteps.map((_, i) => i * width),
+    outputRange: onboardingSteps.map(step => step.backgroundColor),
+  });
+
   // Render each onboarding slide
-  const renderItem = ({ item }) => {
+  const renderItem = ({ item, index }) => {
+    // Calculate input range for animation
+    const inputRange = [
+      (index - 1) * width,
+      index * width,
+      (index + 1) * width,
+    ];
+    
+    // Define animations
+    const translateX = scrollX.interpolate({
+      inputRange,
+      outputRange: [width * 0.2, 0, -width * 0.2],
+      extrapolate: 'clamp',
+    });
+    
+    const opacity = scrollX.interpolate({
+      inputRange,
+      outputRange: [0, 1, 0],
+      extrapolate: 'clamp',
+    });
+    
+    const scale = scrollX.interpolate({
+      inputRange,
+      outputRange: [0.8, 1, 0.8],
+      extrapolate: 'clamp',
+    });
+
     return (
       <View style={styles.slide}>
-        <Image source={item.image} style={styles.image} resizeMode="contain" />
-        <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.description}>{item.description}</Text>
+        <Animated.View 
+          style={[
+            styles.imageContainer,
+            { 
+              transform: [{ translateX }, { scale }],
+              opacity,
+            }
+          ]}
+        >
+          <View style={styles.iconCircle}>
+            <Ionicons 
+              name={item.iconName} 
+              size={40} 
+              color={ZEN_HEALING.COLORS.PRIMARY}
+            />
+          </View>
+          <Image 
+            source={item.image} 
+            style={styles.image} 
+            resizeMode="contain"
+          />
+        </Animated.View>
+        
+        <Animated.View 
+          style={[
+            styles.textContainer,
+            { 
+              opacity,
+              transform: [{ translateX }],
+            }
+          ]}
+        >
+          <Text style={styles.title}>{item.title}</Text>
+          <Text style={styles.description}>{item.description}</Text>
+        </Animated.View>
       </View>
     );
   };
@@ -120,78 +198,130 @@ const OnboardingStepsScreen = ({ navigation }) => {
             );
           })}
         </View>
+        
+        <Text style={styles.stepCounter}>
+          Step {currentIndex + 1} of {onboardingSteps.length}
+        </Text>
       </View>
     );
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Animated.FlatList
-        ref={flatListRef}
-        data={onboardingSteps}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        pagingEnabled
-        bounces={false}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-          { useNativeDriver: false }
-        )}
-        onViewableItemsChanged={handleViewableItemsChanged}
-        viewabilityConfig={{ viewAreaCoveragePercentThreshold: 50 }}
-        scrollEventThrottle={16}
-      />
+    <Animated.View style={[styles.container, { backgroundColor }]}>
+      <SafeAreaView style={styles.safeContainer}>
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.skipButton}
+            onPress={skipOnboarding}
+          >
+            <Text style={styles.skipText}>Skip</Text>
+          </TouchableOpacity>
+        </View>
       
-      {renderPagination()}
-      
-      <View style={styles.footer}>
-        <TouchableOpacity 
-          style={styles.skipButton}
-          onPress={() => {
-            dispatch(updateOnboarding({ completed: true }));
-            navigation.replace('Home');
-          }}
-        >
-          <Text style={styles.skipText}>Skip</Text>
-        </TouchableOpacity>
+        <Animated.FlatList
+          ref={flatListRef}
+          data={onboardingSteps}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          pagingEnabled
+          bounces={false}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+            { useNativeDriver: false }
+          )}
+          onViewableItemsChanged={handleViewableItemsChanged}
+          viewabilityConfig={{ viewAreaCoveragePercentThreshold: 50 }}
+          scrollEventThrottle={16}
+        />
         
-        <TouchableOpacity 
-          style={styles.nextButton}
-          onPress={goToNextSlide}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.nextButtonText}>
-            {currentIndex === onboardingSteps.length - 1 ? 'Get Started' : 'Next'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+        {renderPagination()}
+        
+        <View style={styles.footer}>
+          <GradientView
+            colors={[ZEN_HEALING.COLORS.PRIMARY, ZEN_HEALING.COLORS.SECONDARY]}
+            style={styles.nextButton}
+          >
+            <TouchableOpacity 
+              onPress={goToNextSlide}
+              activeOpacity={0.8}
+              style={styles.nextButtonContent}
+            >
+              <Text style={styles.nextButtonText}>
+                {currentIndex === onboardingSteps.length - 1 ? 'Get Started' : 'Continue'}
+              </Text>
+              <Ionicons 
+                name={currentIndex === onboardingSteps.length - 1 ? 'checkmark' : 'arrow-forward'} 
+                size={20} 
+                color="white"
+                style={styles.nextButtonIcon}
+              />
+            </TouchableOpacity>
+          </GradientView>
+        </View>
+      </SafeAreaView>
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: ZEN_HEALING.COLORS.BACKGROUND.PRIMARY,
+  },
+  safeContainer: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    padding: 16,
+  },
+  skipButton: {
+    padding: 8,
+  },
+  skipText: {
+    fontSize: 16,
+    color: ZEN_HEALING.COLORS.TEXT.SECONDARY,
+    fontWeight: '500',
   },
   slide: {
     width,
     paddingHorizontal: 24,
-    paddingTop: 32,
     alignItems: 'center',
+    justifyContent: 'center',
+  },
+  imageContainer: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  iconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+    shadowColor: ZEN_HEALING.COLORS.SHADOW,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 8,
   },
   image: {
-    width: width * 0.8,
-    height: width * 0.8,
-    marginBottom: 24,
+    width: width * 0.7,
+    height: width * 0.7,
+  },
+  textContainer: {
+    alignItems: 'center',
+    maxWidth: '85%',
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 16,
-    color: ZEN_HEALING.COLORS.PRIMARY,
+    color: ZEN_HEALING.COLORS.TEXT.PRIMARY,
     textAlign: 'center',
   },
   description: {
@@ -201,51 +331,48 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   paginationContainer: {
-    position: 'absolute',
-    bottom: 130,
-    left: 0,
-    right: 0,
     alignItems: 'center',
+    paddingVertical: 20,
   },
   dotsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 10,
   },
   dot: {
     height: 10,
     borderRadius: 5,
     marginHorizontal: 6,
   },
+  stepCounter: {
+    fontSize: 14,
+    color: ZEN_HEALING.COLORS.TEXT.TERTIARY,
+    marginTop: 8,
+  },
   footer: {
     padding: 24,
-    flexDirection: 'row',
+    paddingBottom: 32,
     alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  skipButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-  },
-  skipText: {
-    fontSize: 16,
-    color: ZEN_HEALING.COLORS.TEXT.SECONDARY,
   },
   nextButton: {
-    backgroundColor: ZEN_HEALING.COLORS.PRIMARY,
-    paddingVertical: 15,
-    paddingHorizontal: 32,
-    borderRadius: 25,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    width: '80%',
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  nextButtonContent: {
+    flexDirection: 'row',
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   nextButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
+    color: 'white',
+    fontSize: 18,
     fontWeight: 'bold',
+  },
+  nextButtonIcon: {
+    marginLeft: 8,
   },
 });
 
