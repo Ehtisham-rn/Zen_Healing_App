@@ -4,24 +4,20 @@ import { ZEN_HEALING } from '../constants';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 /**
- * A component for displaying practitioner information
+ * A simplified component for displaying practitioner information
  * @param {Object} props
  * @param {string} props.name - The name of the practitioner
  * @param {string} props.speciality - The practitioner's speciality
- * @param {string} props.rating - The practitioner's rating
  * @param {string} props.imageUri - The URI for the practitioner's image
  * @param {string} props.status - The practitioner's status (active, pending, etc.)
  * @param {function} props.onPress - Function to call when the card is pressed
- * @param {function} props.onBookPress - Function to call when the book button is pressed
  */
 const PractitionerCard = ({ 
   name, 
   speciality, 
-  rating = "4.5", 
   imageUri,
   status,
-  onPress,
-  onBookPress
+  onPress
 }) => {
   // Format status for display if needed
   const statusText = status ? 
@@ -44,11 +40,6 @@ const PractitionerCard = ({
         <Text style={styles.name}>{name}</Text>
         <Text style={styles.speciality}>{speciality}</Text>
         
-        <View style={styles.ratingContainer}>
-          <Ionicons name="star" size={16} color={ZEN_HEALING.COLORS.WARNING} />
-          <Text style={styles.rating}>{rating}</Text>
-        </View>
-        
         {statusText && (
           <View style={[
             styles.statusContainer, 
@@ -59,16 +50,6 @@ const PractitionerCard = ({
           </View>
         )}
       </View>
-      
-      <TouchableOpacity 
-        style={styles.bookButton}
-        onPress={(e) => {
-          e.stopPropagation(); // Prevent triggering the card's onPress
-          onBookPress ? onBookPress() : onPress();
-        }}
-      >
-        <Text style={styles.bookButtonText}>Book</Text>
-      </TouchableOpacity>
     </TouchableOpacity>
   );
 };
@@ -86,6 +67,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+    alignItems: 'center',
   },
   imageContainer: {
     width: 70,
@@ -120,17 +102,6 @@ const styles = StyleSheet.create({
     color: ZEN_HEALING.COLORS.TEXT.SECONDARY,
     marginBottom: 8,
   },
-  ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  rating: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginLeft: 4,
-    color: ZEN_HEALING.COLORS.TEXT.PRIMARY,
-  },
   statusContainer: {
     marginTop: 4,
     paddingHorizontal: 8,
@@ -149,21 +120,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: 'bold',
     color: ZEN_HEALING.COLORS.TEXT.PRIMARY,
-  },
-  bookButton: {
-    position: 'absolute',
-    bottom: 16,
-    right: 16,
-    backgroundColor: ZEN_HEALING.COLORS.PRIMARY,
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 20,
-    zIndex: 1,  // Ensure button is above other elements
-  },
-  bookButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 12,
   },
 });
 

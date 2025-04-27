@@ -141,7 +141,7 @@ const HomeScreen = ({ navigation }) => {
         contentContainerStyle={styles.scrollContent}
       >
         {/* Reset Onboarding Button */}
-        {/* <GradientView
+        <GradientView
           colors={[ZEN_HEALING.COLORS.PRIMARY, ZEN_HEALING.COLORS.SECONDARY]}
           style={styles.resetOnboardingButton}
         >
@@ -152,7 +152,7 @@ const HomeScreen = ({ navigation }) => {
             <Text style={styles.resetOnboardingText}>View Onboarding Screens</Text>
             <Ionicons name="chevron-forward" size={18} color="white" style={styles.resetOnboardingIcon} />
           </TouchableOpacity>
-        </GradientView> */}
+        </GradientView>
 
         {/* Search Bar */}
         <TouchableOpacity style={styles.searchBar}>
@@ -246,11 +246,9 @@ const HomeScreen = ({ navigation }) => {
                   key={doctor.id}
                   name={doctor.name}
                   speciality={doctor.speciality ? doctor.speciality.name : getSpecialityById(doctor.speciality_id)}
-                  rating="4.8"
                   imageUri={doctor.image_url}
                   status={doctor.status}
                   onPress={() => handlePractitionerPress(doctor)}
-                  onBookPress={() => handleBookAppointment(doctor)}
                 />
               ))
             ) : (

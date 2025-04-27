@@ -86,7 +86,7 @@ const DoctorDetailsModal = ({
         <View style={styles.modalContent}>
           {/* Header with close button */}
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Doctor Details</Text>
+            <Text style={styles.modalTitle}>Doctor Profile</Text>
             <TouchableOpacity style={styles.closeButton} onPress={onClose}>
               <Ionicons name="close" size={24} color={ZEN_HEALING.COLORS.TEXT.PRIMARY} />
             </TouchableOpacity>
@@ -125,17 +125,19 @@ const DoctorDetailsModal = ({
               </View>
             </View>
             
-            {/* Rating section */}
-            <View style={styles.ratingSection}>
-              <View style={styles.ratingStars}>
-                <Ionicons name="star" size={20} color={ZEN_HEALING.COLORS.WARNING} />
-                <Ionicons name="star" size={20} color={ZEN_HEALING.COLORS.WARNING} />
-                <Ionicons name="star" size={20} color={ZEN_HEALING.COLORS.WARNING} />
-                <Ionicons name="star" size={20} color={ZEN_HEALING.COLORS.WARNING} />
-                <Ionicons name="star-half" size={20} color={ZEN_HEALING.COLORS.WARNING} />
+            {/* Rating section - Only show if reviews are available */}
+            {doctor.rating && (
+              <View style={styles.ratingSection}>
+                <View style={styles.ratingStars}>
+                  <Ionicons name="star" size={20} color={ZEN_HEALING.COLORS.WARNING} />
+                  <Ionicons name="star" size={20} color={ZEN_HEALING.COLORS.WARNING} />
+                  <Ionicons name="star" size={20} color={ZEN_HEALING.COLORS.WARNING} />
+                  <Ionicons name="star" size={20} color={ZEN_HEALING.COLORS.WARNING} />
+                  <Ionicons name="star-half" size={20} color={ZEN_HEALING.COLORS.WARNING} />
+                </View>
+                <Text style={styles.ratingText}>{doctor.rating} {doctor.reviews_count ? `(${doctor.reviews_count} reviews)` : ''}</Text>
               </View>
-              <Text style={styles.ratingText}>4.8 (120 reviews)</Text>
-            </View>
+            )}
             
             {/* Contact Info Section */}
             <View style={styles.sectionContainer}>
@@ -213,6 +215,7 @@ const DoctorDetailsModal = ({
               style={styles.bookButton}
               onPress={() => onBookPress(doctor)}
             >
+              <Ionicons name="calendar-outline" size={20} color="white" style={styles.bookButtonIcon} />
               <Text style={styles.bookButtonText}>Book Appointment</Text>
             </TouchableOpacity>
           </View>
@@ -386,11 +389,16 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   bookButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  bookButtonIcon: {
+    marginRight: 8,
   },
 });
 

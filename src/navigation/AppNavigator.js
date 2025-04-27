@@ -12,6 +12,13 @@ import SplashScreen from '../screens/onboarding/SplashScreen';
 import WelcomeScreen from '../screens/onboarding/WelcomeScreen';
 import OnboardingStepsScreen from '../screens/onboarding/OnboardingStepsScreen';
 import HomeScreen from '../screens/home/HomeScreen';
+import PractitionersScreen from '../screens/PractitionersScreen';
+import ProfileScreen from '../screens/ProfileScreen';
+import PrivacyPolicyScreen from '../screens/PrivacyPolicyScreen';
+import TermsOfServiceScreen from '../screens/TermsOfServiceScreen';
+import AboutScreen from '../screens/AboutScreen';
+import ContactSupportScreen from '../screens/ContactSupportScreen';
+import FAQScreen from '../screens/FAQScreen';
 
 // Import navigation theme and colors
 import { ZEN_HEALING } from '../constants';
@@ -19,6 +26,30 @@ import { ZEN_HEALING } from '../constants';
 // Create navigation stacks
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
+
+// Home stack
+const HomeStack = () => {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="HomeScreen" component={HomeScreen} />
+      <Stack.Screen name="PractitionersScreen" component={PractitionersScreen} />
+    </Stack.Navigator>
+  );
+};
+
+// Profile stack
+const ProfileStack = () => {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
+      <Stack.Screen name="PrivacyPolicyScreen" component={PrivacyPolicyScreen} />
+      <Stack.Screen name="TermsOfServiceScreen" component={TermsOfServiceScreen} />
+      <Stack.Screen name="AboutScreen" component={AboutScreen} />
+      <Stack.Screen name="ContactSupportScreen" component={ContactSupportScreen} />
+      <Stack.Screen name="FAQScreen" component={FAQScreen} />
+    </Stack.Navigator>
+  );
+};
 
 // Main Tab Navigation
 const MainTabNavigator = () => {
@@ -43,7 +74,7 @@ const MainTabNavigator = () => {
     >
       <Tab.Screen 
         name="HomeTab" 
-        component={HomeScreen}
+        component={HomeStack}
         options={{
           tabBarLabel: 'Home',
           tabBarIcon: ({ color, size }) => (
@@ -63,7 +94,7 @@ const MainTabNavigator = () => {
       />
       <Tab.Screen 
         name="Practitioners" 
-        component={HomeScreen} // Replace with actual Practitioners screen when created
+        component={PractitionersScreen}
         options={{
           tabBarLabel: 'Practitioners',
           tabBarIcon: ({ color, size }) => (
@@ -73,7 +104,7 @@ const MainTabNavigator = () => {
       />
       <Tab.Screen 
         name="Profile" 
-        component={HomeScreen} // Replace with actual Profile screen when created
+        component={ProfileStack}
         options={{
           tabBarLabel: 'Profile',
           tabBarIcon: ({ color, size }) => (
