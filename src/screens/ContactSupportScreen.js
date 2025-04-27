@@ -7,22 +7,25 @@ import {
   TouchableOpacity,
   SafeAreaView,
   TextInput,
-  Alert
+  Alert,
+  ActivityIndicator
 } from 'react-native';
 import { ZEN_HEALING } from '../constants';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import zenHealingApi from '../services/zenHealingApi';
 
 const ContactSupportScreen = ({ navigation }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleGoBack = () => {
     navigation.goBack();
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Validate inputs
     if (!name.trim() || !email.trim() || !subject.trim() || !message.trim()) {
       Alert.alert('Error', 'Please fill in all fields');
@@ -36,13 +39,42 @@ const ContactSupportScreen = ({ navigation }) => {
       return;
     }
 
-    // In a real app, this would send the support request to a backend
-    // For now, we'll just show a success message
-    Alert.alert(
-      'Message Sent',
-      'Thank you for contacting support. We will get back to you as soon as possible.',
-      [{ text: 'OK', onPress: () => navigation.goBack() }]
-    );
+    // Prepare form data
+    const formData = {
+      name,
+      email,
+      subject,
+      message
+    };
+
+    try {
+      setIsSubmitting(true);
+      // Call the contact form API
+      await zenHealingApi.contact.submit(formData);
+      
+      setIsSubmitting(false);
+      // Show success message
+      Alert.alert(
+        'Message Sent',
+        'Thank you for contacting support. We will get back to you as soon as possible.',
+        [{ text: 'OK', onPress: () => navigation.goBack() }]
+      );
+      
+      // Clear form
+      setName('');
+      setEmail('');
+      setSubject('');
+      setMessage('');
+      
+    } catch (error) {
+      setIsSubmitting(false);
+      // Show error message
+      Alert.alert(
+        'Error',
+        error.message || 'Failed to send message. Please try again later.'
+      );
+      console.error('Contact form submission error:', error);
+    }
   };
 
   return (
@@ -69,6 +101,7 @@ const ContactSupportScreen = ({ navigation }) => {
                 value={name}
                 onChangeText={setName}
                 placeholderTextColor={ZEN_HEALING.COLORS.TEXT.TERTIARY}
+                editable={!isSubmitting}
               />
             </View>
             
@@ -82,6 +115,7 @@ const ContactSupportScreen = ({ navigation }) => {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 placeholderTextColor={ZEN_HEALING.COLORS.TEXT.TERTIARY}
+                editable={!isSubmitting}
               />
             </View>
             
@@ -93,6 +127,7 @@ const ContactSupportScreen = ({ navigation }) => {
                 value={subject}
                 onChangeText={setSubject}
                 placeholderTextColor={ZEN_HEALING.COLORS.TEXT.TERTIARY}
+                editable={!isSubmitting}
               />
             </View>
             
@@ -107,11 +142,20 @@ const ContactSupportScreen = ({ navigation }) => {
                 numberOfLines={5}
                 placeholderTextColor={ZEN_HEALING.COLORS.TEXT.TERTIARY}
                 textAlignVertical="top"
+                editable={!isSubmitting}
               />
             </View>
             
-            <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-              <Text style={styles.submitButtonText}>Submit</Text>
+            <TouchableOpacity 
+              style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]} 
+              onPress={handleSubmit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator color="white" size="small" />
+              ) : (
+                <Text style={styles.submitButtonText}>Submit</Text>
+              )}
             </TouchableOpacity>
           </View>
           
@@ -207,6 +251,9 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     alignItems: 'center',
     marginTop: 16,
+  },
+  submitButtonDisabled: {
+    backgroundColor: ZEN_HEALING.COLORS.PRIMARY + '80', // Add opacity
   },
   submitButtonText: {
     color: 'white',

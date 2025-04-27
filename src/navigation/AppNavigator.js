@@ -19,6 +19,8 @@ import TermsOfServiceScreen from '../screens/TermsOfServiceScreen';
 import AboutScreen from '../screens/AboutScreen';
 import ContactSupportScreen from '../screens/ContactSupportScreen';
 import FAQScreen from '../screens/FAQScreen';
+import DoctorLoginScreen from '../screens/auth/DoctorLoginScreen';
+import DoctorRegisterScreen from '../screens/auth/DoctorRegisterScreen';
 
 // Import navigation theme and colors
 import { ZEN_HEALING } from '../constants';
@@ -47,6 +49,8 @@ const ProfileStack = () => {
       <Stack.Screen name="AboutScreen" component={AboutScreen} />
       <Stack.Screen name="ContactSupportScreen" component={ContactSupportScreen} />
       <Stack.Screen name="FAQScreen" component={FAQScreen} />
+      <Stack.Screen name="DoctorLoginScreen" component={DoctorLoginScreen} />
+      <Stack.Screen name="DoctorRegisterScreen" component={DoctorRegisterScreen} />
     </Stack.Navigator>
   );
 };
