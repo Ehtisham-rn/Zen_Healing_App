@@ -58,6 +58,7 @@ export const STORAGE_KEYS = {
   AUTH_TOKEN: 'zen_healing_auth_token',
   USER_INFO: 'zen_healing_user_info',
   DOCTOR_INFO: 'zen_healing_doctor_info',
+  DOCTOR_APPOINTMENTS: 'zen_healing_doctor_appointments',
   APP_SETTINGS: 'zen_healing_app_settings',
   ONBOARDING_COMPLETED: 'zen_healing_onboarding_completed',
   RECENT_SEARCHES: 'zen_healing_recent_searches',

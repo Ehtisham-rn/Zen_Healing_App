@@ -13,12 +13,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS } from '../../constants';
 import { updateOnboarding } from '../../state/slices/appSlice';
 import GradientView from '../../components/GradientView';
+import * as storage from '../../utils/storage';
 
 // Import our custom components
 import CardSection from '../../components/CardSection';
 import CategoryCard from '../../components/CategoryCard';
 import PractitionerCard from '../../components/PractitionerCard';
-import AppointmentCard from '../../components/AppointmentCard';
 import ArticleCard from '../../components/ArticleCard';
 import TagCard from '../../components/TagCard';
 import FloatingActionButton from '../../components/FloatingActionButton';
@@ -57,46 +57,36 @@ const HomeScreen = ({ navigation }) => {
     }
   }, [isInitialized, initializeData]);
 
-  // Function to reset onboarding state and return to onboarding screens
+  // Reset onboarding
   const resetOnboarding = async () => {
     try {
-      // Clear the onboarding completed flag from AsyncStorage
-      await AsyncStorage.removeItem(STORAGE_KEYS.ONBOARDING_COMPLETED);
-      
-      // Update Redux state to mark onboarding as not completed
+      await storage.storeData(STORAGE_KEYS.ONBOARDING_COMPLETED, 'false');
       dispatch(updateOnboarding({ completed: false }));
-      
-      // Navigate to the onboarding stack
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'OnboardingStack' }],
-      });
+      navigation.replace('OnboardingStack');
     } catch (error) {
       console.error('Failed to reset onboarding:', error);
     }
   };
 
-  // Modal handlers
+  // Open doctor details modal
   const handleOpenModal = (doctor) => {
     setSelectedDoctor(doctor);
     setModalVisible(true);
   };
 
+  // Close doctor details modal
   const handleCloseModal = () => {
     setModalVisible(false);
+    setSelectedDoctor(null);
   };
 
-  // Navigation handlers
-  const handleSeeAllAppointments = () => {
-    // Navigate to appointments screen
-    navigation.navigate('AppointmentsScreen');
-  };
-
+  // Navigate to practitioners screen
   const handleSeeAllPractitioners = () => {
     // Navigate to practitioners screen
     navigation.navigate('PractitionersScreen');
   };
 
+  // Handle search submit
   const handleSearchSubmit = () => {
     // Navigate to practitioners screen with search query if not empty
     if (searchInput.trim()) {
@@ -106,49 +96,53 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
+  // Navigate to articles screen
   const handleSeeAllArticles = () => {
     // Navigate to articles screen
     navigation.navigate('ArticlesScreen');
   };
 
+  // Navigate to specialities screen
   const handleSeeAllSpecialities = () => {
-    // Navigate to practitioners with no filters applied
-    navigation.navigate('PractitionersScreen');
+    // Navigate to practitioners screen with speciality filter
+    navigation.navigate('PractitionersScreen', { filter: { type: 'speciality' } });
   };
 
+  // Navigate to symptoms screen
   const handleSeeAllSymptoms = () => {
-    // Navigate to practitioners with no filters applied
-    navigation.navigate('PractitionersScreen');
+    // Navigate to practitioners screen with symptom filter
+    navigation.navigate('PractitionersScreen', { filter: { type: 'symptom' } });
   };
 
+  // Handle category card press
   const handleCategoryPress = (category) => {
-    // Navigate to category details
-    navigation.navigate('CategoryScreen', { category });
+    // Navigate to practitioners screen with category filter
+    navigation.navigate('PractitionersScreen', { filter: { type: 'category', value: category } });
   };
 
-  const handleAppointmentPress = (appointment) => {
-    // Navigate to appointment details
-    navigation.navigate('AppointmentDetailScreen', { appointment });
-  };
-
+  // Handle practitioner card press
   const handlePractitionerPress = (practitioner) => {
-    // Open modal with doctor details
+    // Open practitioner details modal
     handleOpenModal(practitioner);
   };
 
+  // Navigate to book appointment screen
   const handleBookAppointment = (doctor) => {
-    // Navigate to booking screen with selected doctor
-    setModalVisible(false);
+    // Close modal
+    handleCloseModal();
+    // Navigate to book appointment screen
     navigation.navigate('BookAppointmentScreen', { doctor });
   };
 
+  // Navigate to article details
   const handleArticlePress = (article) => {
     navigation.navigate('ArticleDetailScreen', { articleId: article.id });
   };
 
+  // Quick book appointment button
   const handleQuickBookPress = () => {
-    // Navigate to quick booking screen
-    navigation.navigate('BookAppointmentScreen');
+    // Navigate to practitioners screen
+    navigation.navigate('PractitionersScreen');
   };
 
   // Handle specialty or symptom tag press
@@ -365,33 +359,6 @@ const HomeScreen = ({ navigation }) => {
           </ScrollView>
         </CardSection>
 
-        {/* Upcoming Appointments Section */}
-        <CardSection 
-          title="Upcoming Appointments" 
-          showSeeAll={true}
-          onSeeAllPress={handleSeeAllAppointments}
-        >
-          <AppointmentCard
-            practitionerName="Dr. Sarah Johnson"
-            speciality="Holistic Nutrition"
-            date="Today"
-            time="2:00 PM"
-            status="upcoming"
-            onPress={() => handleAppointmentPress({
-              id: '1',
-              practitionerName: 'Dr. Sarah Johnson',
-              speciality: 'Holistic Nutrition',
-              date: 'Today',
-              time: '2:00 PM',
-              status: 'upcoming'
-            })}
-          />
-
-          <View style={styles.noAppointments}>
-            <Text style={styles.noAppointmentsText}>No other upcoming appointments</Text>
-          </View>
-        </CardSection>
-
         {/* Featured Practitioners Section */}
         <CardSection 
           title="Featured Practitioners" 
@@ -592,14 +559,6 @@ const styles = StyleSheet.create({
   practitionersContainer: {
     paddingVertical: 8,
     paddingRight: 16,
-  },
-  noAppointments: {
-    alignItems: 'center',
-    padding: 16,
-  },
-  noAppointmentsText: {
-    color: ZEN_HEALING.COLORS.TEXT.SECONDARY,
-    fontSize: 14,
   },
   noFeaturedDoctors: {
     alignItems: 'center',

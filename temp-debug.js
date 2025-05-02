@@ -1,0 +1,1 @@
+import store from './src/state/store'; import { fetchSpecialities, fetchLocations } from './src/state/slices/doctorSlice'; store.dispatch(fetchSpecialities()); store.dispatch(fetchLocations()); setTimeout(() => { console.log('Specialities:', store.getState().doctor.specialities); console.log('Locations:', store.getState().doctor.locations); }, 3000);

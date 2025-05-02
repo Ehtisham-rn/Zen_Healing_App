@@ -16,8 +16,23 @@ import { ZEN_HEALING } from '../../constants';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useDispatch, useSelector } from 'react-redux';
-import { registerDoctor, fetchSpecialities, fetchLocations, selectSpecialities, selectLocations } from '../../state/slices/doctorSlice';
+import { 
+  registerDoctor, 
+  fetchSpecialities, 
+  fetchLocations, 
+  fetchSymptoms, 
+  selectSpecialities, 
+  selectLocations, 
+  selectSymptoms,
+  setMockData
+} from '../../state/slices/doctorSlice';
+import { mockSpecialities, mockLocations, mockSymptoms } from '../../utils/mockData';
 import { Picker } from '@react-native-picker/picker';
+import MultiSelect from '../../components/MultiSelect';
+import CustomPicker from '../../components/CustomPicker';
+
+// Debug flag - set to false to disable debugging
+const DEBUG_MODE = false;
 
 const DoctorRegisterScreen = ({ navigation }) => {
   // Form fields
@@ -29,6 +44,7 @@ const DoctorRegisterScreen = ({ navigation }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [specialityId, setSpecialityId] = useState('');
   const [locationId, setLocationId] = useState('');
+  const [selectedSymptoms, setSelectedSymptoms] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
@@ -41,6 +57,7 @@ const DoctorRegisterScreen = ({ navigation }) => {
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const [specialityError, setSpecialityError] = useState('');
   const [locationError, setLocationError] = useState('');
+  const [symptomsError, setSymptomsError] = useState('');
   
   // Loading state
   const [loading, setLoading] = useState(false);
@@ -48,20 +65,28 @@ const DoctorRegisterScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const specialities = useSelector(selectSpecialities);
   const locations = useSelector(selectLocations);
+  const symptoms = useSelector(selectSymptoms);
+  const loadingStates = useSelector(state => state.doctor.loading);
   
-  // Fetch specialities and locations on component mount
+  // Load data on initial mount
   useEffect(() => {
-    const fetchData = async () => {
-      if (specialities.length === 0) {
-        dispatch(fetchSpecialities());
-      }
-      if (locations.length === 0) {
-        dispatch(fetchLocations());
-      }
-    };
+    dispatch(fetchSpecialities());
+    dispatch(fetchLocations());
+    dispatch(fetchSymptoms());
     
-    fetchData();
-  }, [dispatch, specialities.length, locations.length]);
+    // If no data is fetched in 3 seconds, fall back to mock data
+    const timer = setTimeout(() => {
+      if (specialities.length === 0 || locations.length === 0 || symptoms.length === 0) {
+        dispatch(setMockData({
+          specialities: mockSpecialities,
+          locations: mockLocations,
+          symptoms: mockSymptoms
+        }));
+      }
+    }, 3000);
+    
+    return () => clearTimeout(timer);
+  }, [dispatch]);
   
   const handleGoBack = () => {
     navigation.goBack();
@@ -150,6 +175,14 @@ const DoctorRegisterScreen = ({ navigation }) => {
       setLocationError('');
     }
     
+    // Validate symptoms
+    if (selectedSymptoms.length === 0) {
+      setSymptomsError('Please select at least one symptom');
+      isValid = false;
+    } else {
+      setSymptomsError('');
+    }
+    
     return isValid;
   };
   
@@ -161,17 +194,17 @@ const DoctorRegisterScreen = ({ navigation }) => {
     setLoading(true);
     
     try {
-      // Prepare doctor data
+      // Prepare doctor data to match API expectations
       const doctorData = {
         name,
         email,
         phone,
         address,
-        password,
-        speciality_id: specialityId,
-        location_id: locationId,
+        password: Number(password) || password, // Convert to number if possible
+        speciality_id: Number(specialityId),
+        location_id: Number(locationId),
         status: 'pending', // Default status for new doctors
-        symptoms: [] // Default empty array for symptoms
+        symptoms: selectedSymptoms.map(id => Number(id)) // Convert to numbers
       };
       
       // Dispatch register action
@@ -181,18 +214,25 @@ const DoctorRegisterScreen = ({ navigation }) => {
         // Registration successful
         Alert.alert(
           'Registration Successful',
-          'Your account has been created. You can now log in.',
-          [{ text: 'OK', onPress: () => navigation.navigate('DoctorLoginScreen') }]
+          'Your account has been created. You will be redirected to the login screen.',
+          [{ 
+            text: 'OK', 
+            onPress: () => {
+              // Automatically navigate to login screen
+              navigation.navigate('DoctorLoginScreen', { email: email });
+            }
+          }]
         );
       } else {
         // Registration failed
-        const errorMessage = resultAction.payload || 'Registration failed. Please try again.';
+        const errorMessage = resultAction.payload || resultAction.error.message || 'Registration failed. Please try again.';
         Alert.alert('Registration Failed', errorMessage);
       }
     } catch (error) {
+      console.error('Registration error:', error);
       Alert.alert(
         'Error',
-        error.message || 'An error occurred during registration. Please try again.'
+        error.message || 'An unexpected error occurred during registration. Please try again.'
       );
     } finally {
       setLoading(false);
@@ -292,53 +332,75 @@ const DoctorRegisterScreen = ({ navigation }) => {
             {/* Speciality Picker */}
             <View style={styles.inputContainer}>
               <Text style={styles.inputLabel}>Speciality</Text>
-              <View style={[styles.pickerContainer, specialityError ? styles.inputError : null]}>
-                <Picker
+              {loadingStates.specialities ? (
+                <View style={[styles.pickerContainer, styles.loadingContainer]}>
+                  <ActivityIndicator size="small" color={ZEN_HEALING.COLORS.PRIMARY} />
+                  <Text style={styles.loadingText}>Loading specialities...</Text>
+                </View>
+              ) : (
+                <CustomPicker
+                  items={specialities}
                   selectedValue={specialityId}
-                  onValueChange={(itemValue) => {
-                    setSpecialityId(itemValue);
+                  onValueChange={(value) => {
+                    setSpecialityId(value);
                     if (specialityError) setSpecialityError('');
                   }}
+                  placeholder="Select a speciality"
+                  title="Select Speciality"
+                  error={!!specialityError}
                   enabled={!loading}
-                  style={styles.picker}
-                >
-                  <Picker.Item label="Select a speciality" value="" color={ZEN_HEALING.COLORS.TEXT.TERTIARY} />
-                  {specialities.map((speciality) => (
-                    <Picker.Item 
-                      key={speciality.id} 
-                      label={speciality.name} 
-                      value={speciality.id} 
-                    />
-                  ))}
-                </Picker>
-              </View>
+                />
+              )}
               {specialityError ? <Text style={styles.errorText}>{specialityError}</Text> : null}
             </View>
             
             {/* Location Picker */}
             <View style={styles.inputContainer}>
               <Text style={styles.inputLabel}>Location</Text>
-              <View style={[styles.pickerContainer, locationError ? styles.inputError : null]}>
-                <Picker
+              {loadingStates.locations ? (
+                <View style={[styles.pickerContainer, styles.loadingContainer]}>
+                  <ActivityIndicator size="small" color={ZEN_HEALING.COLORS.PRIMARY} />
+                  <Text style={styles.loadingText}>Loading locations...</Text>
+                </View>
+              ) : (
+                <CustomPicker
+                  items={locations}
                   selectedValue={locationId}
-                  onValueChange={(itemValue) => {
-                    setLocationId(itemValue);
+                  onValueChange={(value) => {
+                    setLocationId(value);
                     if (locationError) setLocationError('');
                   }}
+                  placeholder="Select a location"
+                  title="Select Location"
+                  error={!!locationError}
                   enabled={!loading}
-                  style={styles.picker}
-                >
-                  <Picker.Item label="Select a location" value="" color={ZEN_HEALING.COLORS.TEXT.TERTIARY} />
-                  {locations.map((location) => (
-                    <Picker.Item 
-                      key={location.id} 
-                      label={location.name} 
-                      value={location.id} 
-                    />
-                  ))}
-                </Picker>
-              </View>
+                />
+              )}
               {locationError ? <Text style={styles.errorText}>{locationError}</Text> : null}
+            </View>
+            
+            {/* Symptoms Multi-Select */}
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Symptoms You Can Treat</Text>
+              {loadingStates.symptoms ? (
+                <View style={[styles.pickerContainer, styles.loadingContainer]}>
+                  <ActivityIndicator size="small" color={ZEN_HEALING.COLORS.PRIMARY} />
+                  <Text style={styles.loadingText}>Loading symptoms...</Text>
+                </View>
+              ) : (
+                <MultiSelect
+                  items={symptoms}
+                  selectedItems={selectedSymptoms}
+                  onSelectionChange={(selected) => {
+                    setSelectedSymptoms(selected);
+                    if (symptomsError) setSymptomsError('');
+                  }}
+                  placeholder="Select symptoms you can treat"
+                  title="Select Symptoms"
+                  error={!!symptomsError}
+                />
+              )}
+              {symptomsError ? <Text style={styles.errorText}>{symptomsError}</Text> : null}
             </View>
             
             {/* Password Input */}
@@ -501,6 +563,17 @@ const styles = StyleSheet.create({
   picker: {
     color: ZEN_HEALING.COLORS.TEXT.PRIMARY,
     height: 50,
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+  },
+  loadingText: {
+    marginLeft: 8,
+    color: ZEN_HEALING.COLORS.TEXT.SECONDARY,
+    fontSize: 14,
   },
   passwordContainer: {
     flexDirection: 'row',

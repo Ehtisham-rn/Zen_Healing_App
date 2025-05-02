@@ -8,7 +8,8 @@ import {
   Image, 
   ScrollView, 
   Linking,
-  Platform 
+  Platform,
+  Alert
 } from 'react-native';
 import { ZEN_HEALING } from '../constants';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -213,7 +214,19 @@ const DoctorDetailsModal = ({
           <View style={styles.bookButtonContainer}>
             <TouchableOpacity 
               style={styles.bookButton}
-              onPress={() => onBookPress(doctor)}
+              onPress={() => {
+                if (doctor && doctor.id) {
+                  // Create a deep clone of the doctor object to avoid reference issues
+                  const doctorData = JSON.parse(JSON.stringify(doctor));
+                  onBookPress(doctorData);
+                } else {
+                  Alert.alert(
+                    'Error',
+                    'Cannot book appointment. Doctor information is incomplete.',
+                    [{ text: 'OK' }]
+                  );
+                }
+              }}
             >
               <Ionicons name="calendar-outline" size={20} color="white" style={styles.bookButtonIcon} />
               <Text style={styles.bookButtonText}>Book Appointment</Text>

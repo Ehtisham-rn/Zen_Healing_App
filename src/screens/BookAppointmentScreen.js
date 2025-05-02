@@ -28,6 +28,19 @@ const BookAppointmentScreen = ({ navigation, route }) => {
   // Get doctor information passed from the previous screen
   const doctor = route.params?.doctor;
   
+  // Check if doctor information is available
+  useEffect(() => {
+    console.log('BookAppointmentScreen - Doctor info:', doctor);
+    if (!doctor || !doctor.id) {
+      console.warn('BookAppointmentScreen - Missing or invalid doctor information:', doctor);
+      Alert.alert(
+        'Error',
+        'Doctor information is missing. Please select a doctor first.',
+        [{ text: 'OK', onPress: () => navigation.goBack() }]
+      );
+    }
+  }, [doctor, navigation]);
+  
   // Get appointments functionality from hook
   const { bookAppointment } = useAppointments();
   const dispatch = useDispatch();
@@ -220,156 +233,170 @@ const BookAppointmentScreen = ({ navigation, route }) => {
         </View>
         
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {doctor && (
-            <View style={styles.doctorInfo}>
-              <Text style={styles.doctorName}>{doctor.name}</Text>
-              <Text style={styles.doctorSpeciality}>
-                {doctor.speciality ? doctor.speciality.name : ''}
-              </Text>
+          {doctor && doctor.id ? (
+            <>
+              <View style={styles.doctorInfo}>
+                <Text style={styles.doctorName}>{doctor.name}</Text>
+                <Text style={styles.doctorSpeciality}>
+                  {doctor.speciality ? doctor.speciality.name : ''}
+                </Text>
+              </View>
+              
+              <View style={styles.formSection}>
+                <Text style={styles.sectionTitle}>Appointment Details</Text>
+                
+                {/* Date Picker */}
+                <View style={styles.inputContainer}>
+                  <Text style={styles.inputLabel}>Date</Text>
+                  <TouchableOpacity
+                    style={styles.dateTimeButton}
+                    onPress={showDatePickerModal}
+                    disabled={isLoading}
+                  >
+                    <Text style={styles.dateTimeText}>{formatDate(bookingDate)}</Text>
+                    <Ionicons name="calendar-outline" size={20} color={ZEN_HEALING.COLORS.PRIMARY} />
+                  </TouchableOpacity>
+                  
+                  {showDatePicker && (
+                    <DateTimePicker
+                      value={bookingDate}
+                      mode="date"
+                      display="default"
+                      onChange={onDateChange}
+                      minimumDate={new Date()}
+                    />
+                  )}
+                </View>
+                
+                {/* Time Picker */}
+                <View style={styles.inputContainer}>
+                  <Text style={styles.inputLabel}>Time</Text>
+                  <TouchableOpacity
+                    style={styles.dateTimeButton}
+                    onPress={showTimePickerModal}
+                    disabled={isLoading}
+                  >
+                    <Text style={styles.dateTimeText}>{formatTime(bookingTime)}</Text>
+                    <Ionicons name="time-outline" size={20} color={ZEN_HEALING.COLORS.PRIMARY} />
+                  </TouchableOpacity>
+                  
+                  {showTimePicker && (
+                    <DateTimePicker
+                      value={bookingTime}
+                      mode="time"
+                      display="default"
+                      onChange={onTimeChange}
+                    />
+                  )}
+                </View>
+                
+                <Text style={styles.sectionTitle}>Personal Information</Text>
+                
+                {/* Name Input */}
+                <View style={styles.inputContainer}>
+                  <Text style={styles.inputLabel}>Full Name</Text>
+                  <TextInput
+                    style={[styles.input, nameError ? styles.inputError : null]}
+                    placeholder="Enter your full name"
+                    value={name}
+                    onChangeText={(text) => {
+                      setName(text);
+                      if (nameError) setNameError('');
+                    }}
+                    placeholderTextColor={ZEN_HEALING.COLORS.TEXT.TERTIARY}
+                    editable={!isLoading}
+                  />
+                  {nameError ? <Text style={styles.errorText}>{nameError}</Text> : null}
+                </View>
+                
+                {/* Email Input */}
+                <View style={styles.inputContainer}>
+                  <Text style={styles.inputLabel}>Email</Text>
+                  <TextInput
+                    style={[styles.input, emailError ? styles.inputError : null]}
+                    placeholder="Enter your email"
+                    value={email}
+                    onChangeText={(text) => {
+                      setEmail(text);
+                      if (emailError) setEmailError('');
+                    }}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    placeholderTextColor={ZEN_HEALING.COLORS.TEXT.TERTIARY}
+                    editable={!isLoading}
+                  />
+                  {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
+                </View>
+                
+                {/* Phone Input */}
+                <View style={styles.inputContainer}>
+                  <Text style={styles.inputLabel}>Phone Number</Text>
+                  <TextInput
+                    style={[styles.input, phoneError ? styles.inputError : null]}
+                    placeholder="Enter your phone number"
+                    value={phone}
+                    onChangeText={(text) => {
+                      setPhone(text);
+                      if (phoneError) setPhoneError('');
+                    }}
+                    keyboardType="phone-pad"
+                    placeholderTextColor={ZEN_HEALING.COLORS.TEXT.TERTIARY}
+                    editable={!isLoading}
+                  />
+                  {phoneError ? <Text style={styles.errorText}>{phoneError}</Text> : null}
+                </View>
+                
+                {/* Message Input */}
+                <View style={styles.inputContainer}>
+                  <Text style={styles.inputLabel}>Message (Optional)</Text>
+                  <TextInput
+                    style={[styles.input, styles.messageInput]}
+                    placeholder="Enter any specific details or concerns"
+                    value={message}
+                    onChangeText={setMessage}
+                    placeholderTextColor={ZEN_HEALING.COLORS.TEXT.TERTIARY}
+                    multiline
+                    numberOfLines={4}
+                    textAlignVertical="top"
+                    editable={!isLoading}
+                  />
+                </View>
+                
+                <View style={styles.termsContainer}>
+                  <Ionicons name="information-circle-outline" size={18} color={ZEN_HEALING.COLORS.TEXT.SECONDARY} />
+                  <Text style={styles.termsText}>
+                    By booking this appointment, you agree to our 
+                    <Text style={styles.termsLink}> Terms & Conditions</Text> and 
+                    <Text style={styles.termsLink}> Cancellation Policy</Text>.
+                  </Text>
+                </View>
+                
+                <TouchableOpacity
+                  style={[styles.bookButton, isLoading && styles.disabledButton]}
+                  onPress={handleBookAppointment}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator color="white" size="small" />
+                  ) : (
+                    <Text style={styles.bookButtonText}>Book Appointment</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </>
+          ) : (
+            <View style={styles.errorContainer}>
+              <Ionicons name="alert-circle-outline" size={64} color={ZEN_HEALING.COLORS.ERROR} />
+              <Text style={styles.errorTitle}>Doctor Information Missing</Text>
+              <Text style={styles.errorMessage}>Please select a doctor from the practitioners list to book an appointment.</Text>
+              <TouchableOpacity
+                style={styles.goBackButton}
+                onPress={handleGoBack}
+              >
+                <Text style={styles.goBackButtonText}>Go Back</Text>
+              </TouchableOpacity>
             </View>
           )}
-          
-          <View style={styles.formSection}>
-            <Text style={styles.sectionTitle}>Appointment Details</Text>
-            
-            {/* Date Picker */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Date</Text>
-              <TouchableOpacity
-                style={styles.dateTimeButton}
-                onPress={showDatePickerModal}
-                disabled={isLoading}
-              >
-                <Text style={styles.dateTimeText}>{formatDate(bookingDate)}</Text>
-                <Ionicons name="calendar-outline" size={20} color={ZEN_HEALING.COLORS.PRIMARY} />
-              </TouchableOpacity>
-              
-              {showDatePicker && (
-                <DateTimePicker
-                  value={bookingDate}
-                  mode="date"
-                  display="default"
-                  onChange={onDateChange}
-                  minimumDate={new Date()}
-                />
-              )}
-            </View>
-            
-            {/* Time Picker */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Time</Text>
-              <TouchableOpacity
-                style={styles.dateTimeButton}
-                onPress={showTimePickerModal}
-                disabled={isLoading}
-              >
-                <Text style={styles.dateTimeText}>{formatTime(bookingTime)}</Text>
-                <Ionicons name="time-outline" size={20} color={ZEN_HEALING.COLORS.PRIMARY} />
-              </TouchableOpacity>
-              
-              {showTimePicker && (
-                <DateTimePicker
-                  value={bookingTime}
-                  mode="time"
-                  display="default"
-                  onChange={onTimeChange}
-                />
-              )}
-            </View>
-            
-            <Text style={styles.sectionTitle}>Personal Information</Text>
-            
-            {/* Name Input */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Full Name</Text>
-              <TextInput
-                style={[styles.input, nameError ? styles.inputError : null]}
-                placeholder="Enter your full name"
-                value={name}
-                onChangeText={(text) => {
-                  setName(text);
-                  if (nameError) setNameError('');
-                }}
-                placeholderTextColor={ZEN_HEALING.COLORS.TEXT.TERTIARY}
-                editable={!isLoading}
-              />
-              {nameError ? <Text style={styles.errorText}>{nameError}</Text> : null}
-            </View>
-            
-            {/* Email Input */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Email</Text>
-              <TextInput
-                style={[styles.input, emailError ? styles.inputError : null]}
-                placeholder="Enter your email"
-                value={email}
-                onChangeText={(text) => {
-                  setEmail(text);
-                  if (emailError) setEmailError('');
-                }}
-                autoCapitalize="none"
-                keyboardType="email-address"
-                placeholderTextColor={ZEN_HEALING.COLORS.TEXT.TERTIARY}
-                editable={!isLoading}
-              />
-              {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
-            </View>
-            
-            {/* Phone Input */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Phone Number</Text>
-              <TextInput
-                style={[styles.input, phoneError ? styles.inputError : null]}
-                placeholder="Enter your phone number"
-                value={phone}
-                onChangeText={(text) => {
-                  setPhone(text);
-                  if (phoneError) setPhoneError('');
-                }}
-                keyboardType="phone-pad"
-                placeholderTextColor={ZEN_HEALING.COLORS.TEXT.TERTIARY}
-                editable={!isLoading}
-              />
-              {phoneError ? <Text style={styles.errorText}>{phoneError}</Text> : null}
-            </View>
-            
-            {/* Message Input */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Message (Optional)</Text>
-              <TextInput
-                style={[styles.input, styles.messageInput]}
-                placeholder="Enter any specific details or concerns"
-                value={message}
-                onChangeText={setMessage}
-                placeholderTextColor={ZEN_HEALING.COLORS.TEXT.TERTIARY}
-                multiline
-                numberOfLines={4}
-                textAlignVertical="top"
-                editable={!isLoading}
-              />
-            </View>
-            
-            <View style={styles.termsContainer}>
-              <Ionicons name="information-circle-outline" size={18} color={ZEN_HEALING.COLORS.TEXT.SECONDARY} />
-              <Text style={styles.termsText}>
-                By booking this appointment, you agree to our 
-                <Text style={styles.termsLink}> Terms & Conditions</Text> and 
-                <Text style={styles.termsLink}> Cancellation Policy</Text>.
-              </Text>
-            </View>
-            
-            <TouchableOpacity
-              style={[styles.bookButton, isLoading && styles.disabledButton]}
-              onPress={handleBookAppointment}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <ActivityIndicator color="white" size="small" />
-              ) : (
-                <Text style={styles.bookButtonText}>Book Appointment</Text>
-              )}
-            </TouchableOpacity>
-          </View>
         </ScrollView>
       </SafeAreaView>
     </KeyboardAvoidingView>
@@ -403,11 +430,10 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   doctorInfo: {
-    padding: 16,
-    backgroundColor: ZEN_HEALING.COLORS.BACKGROUND.TERTIARY,
-    borderRadius: 12,
     marginBottom: 24,
-    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: ZEN_HEALING.COLORS.BORDER,
   },
   doctorName: {
     fontSize: 20,
@@ -448,10 +474,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: ZEN_HEALING.COLORS.TEXT.PRIMARY,
   },
-  messageInput: {
-    height: 100,
-    paddingTop: 12,
-  },
   inputError: {
     borderColor: ZEN_HEALING.COLORS.ERROR,
   },
@@ -459,6 +481,10 @@ const styles = StyleSheet.create({
     color: ZEN_HEALING.COLORS.ERROR,
     fontSize: 12,
     marginTop: 4,
+  },
+  messageInput: {
+    minHeight: 100,
+    textAlignVertical: 'top',
   },
   dateTimeButton: {
     flexDirection: 'row',
@@ -500,6 +526,42 @@ const styles = StyleSheet.create({
     backgroundColor: `${ZEN_HEALING.COLORS.PRIMARY}80`,
   },
   bookButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+    marginTop: 40,
+  },
+  errorTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: ZEN_HEALING.COLORS.TEXT.PRIMARY,
+    marginTop: 16,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  errorMessage: {
+    color: ZEN_HEALING.COLORS.TEXT.SECONDARY,
+    fontSize: 16,
+    marginBottom: 24,
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+  goBackButton: {
+    backgroundColor: ZEN_HEALING.COLORS.PRIMARY,
+    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    width: '100%',
+    marginTop: 16,
+  },
+  goBackButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: '600',

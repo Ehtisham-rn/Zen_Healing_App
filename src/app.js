@@ -6,12 +6,12 @@ import React, { useEffect, useState } from 'react';
 import { StatusBar, View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { Provider } from 'react-redux';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import store from './state/store';
 import { initializeAppState } from './state/slices/appSlice';
 import { checkAuthState } from './state/slices/authSlice';
 import { STORAGE_KEYS, ZEN_HEALING } from './constants';
 import * as networkMonitor from './utils/networkMonitor';
+import * as storage from './utils/storage';
 
 // Import our AppNavigator
 import AppNavigator from './navigation/AppNavigator';
@@ -31,9 +31,9 @@ const App = () => {
         
         // Load app settings from storage
         const [appSettings, onboardingCompleted, doctorInfo] = await Promise.all([
-          AsyncStorage.getItem(STORAGE_KEYS.APP_SETTINGS),
-          AsyncStorage.getItem(STORAGE_KEYS.ONBOARDING_COMPLETED),
-          AsyncStorage.getItem(STORAGE_KEYS.DOCTOR_INFO),
+          storage.getData(STORAGE_KEYS.APP_SETTINGS),
+          storage.getData(STORAGE_KEYS.ONBOARDING_COMPLETED),
+          storage.getData(STORAGE_KEYS.DOCTOR_INFO),
         ]);
         
         // Initialize app state with stored values

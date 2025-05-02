@@ -10,7 +10,7 @@ const ENV = {
   prod: 'production'
 };
 
-const currentEnv = ENV.prod; // Change this value to switch environments
+const currentEnv = ENV.dev; // Change this value to switch environments
 
 // Environment-specific configuration
 const config = {
@@ -19,6 +19,7 @@ const config = {
     apiUrl: 'https://backend.zenhealinghub.com/api', // Zen Healing Hub API
     apiTimeout: 10000, // 10 seconds
     logLevel: 'debug',
+    useMockData: true, // Enable mock data in development
   },
   
   // Staging environment
@@ -26,6 +27,7 @@ const config = {
     apiUrl: 'https://backend.zenhealinghub.com/api', // Using same URL for staging
     apiTimeout: 15000, // 15 seconds
     logLevel: 'info',
+    useMockData: false,
   },
   
   // Production environment
@@ -33,6 +35,7 @@ const config = {
     apiUrl: 'https://backend.zenhealinghub.com/api', // Using same URL for production
     apiTimeout: 20000, // 20 seconds
     logLevel: 'error',
+    useMockData: false,
   },
 };
 

@@ -10,10 +10,11 @@ import * as Constants from '../constants';
  * Custom error class to add more context to errors
  */
 export class AppError extends Error {
-  constructor(message, code, originalError = null) {
-    super(message);
+  constructor(message = 'Unknown error', code = 'unknown', originalError = null) {
+    // Ensure message is a string
+    super(message || 'Unknown error');
     this.name = 'AppError';
-    this.code = code;
+    this.code = code || 'unknown';
     this.originalError = originalError;
     
     // Maintains proper stack trace for debugging (V8 only)
@@ -62,7 +63,7 @@ export const handleApiError = (error) => {
   
   // Handle network errors
   if (!error.response) {
-    if (error.message.includes('timeout')) {
+    if (error.message && error.message.includes('timeout')) {
       errorMessage = Constants.API.ERROR_MESSAGES.TIMEOUT_ERROR;
     } else {
       errorMessage = Constants.API.ERROR_MESSAGES.NETWORK_ERROR;
@@ -90,17 +91,22 @@ export const handleApiError = (error) => {
     }
   }
   
+  // Create a safe error object with default values for any potentially null/undefined properties
+  const safeError = {
+    message: errorMessage || 'Unknown error',
+    code: statusCode || 500,
+    key: 'api_error', // Add a default string key
+    // Only include originalError in development to avoid exposing sensitive info
+    originalError: env.isDevelopment ? error : null,
+  };
+  
   // Log the error
   logError(
-    new AppError(errorMessage, statusCode, error),
+    new AppError(safeError.message, safeError.code, error),
     'API'
   );
   
-  return {
-    message: errorMessage,
-    code: statusCode,
-    originalError: env.isDevelopment ? error : null,
-  };
+  return safeError;
 };
 
 /**

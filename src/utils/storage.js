@@ -13,10 +13,17 @@ import { logError } from './errorHandler';
  */
 export const storeData = async (key, value) => {
   try {
-    const jsonValue = JSON.stringify(value);
+    // Validate key is a non-empty string
+    if (typeof key !== 'string' || !key) {
+      console.error('Invalid storage key. Must be a non-empty string:', key);
+      return false;
+    }
+    
+    const jsonValue = typeof value === 'string' ? value : JSON.stringify(value);
     await AsyncStorage.setItem(key, jsonValue);
     return true;
   } catch (error) {
+    console.error('Error storing data:', error, 'Key:', key);
     logError(error, 'Storage');
     return false;
   }
@@ -29,9 +36,16 @@ export const storeData = async (key, value) => {
  */
 export const getData = async (key) => {
   try {
+    // Validate key is a non-empty string
+    if (typeof key !== 'string' || !key) {
+      console.error('Invalid storage key. Must be a non-empty string:', key);
+      return null;
+    }
+    
     const jsonValue = await AsyncStorage.getItem(key);
     return jsonValue != null ? JSON.parse(jsonValue) : null;
   } catch (error) {
+    console.error('Error getting data:', error, 'Key:', key);
     logError(error, 'Storage');
     return null;
   }
@@ -44,9 +58,16 @@ export const getData = async (key) => {
  */
 export const removeData = async (key) => {
   try {
+    // Validate key is a non-empty string
+    if (typeof key !== 'string' || !key) {
+      console.error('Invalid storage key. Must be a non-empty string:', key);
+      return false;
+    }
+    
     await AsyncStorage.removeItem(key);
     return true;
   } catch (error) {
+    console.error('Error removing data:', error, 'Key:', key);
     logError(error, 'Storage');
     return false;
   }

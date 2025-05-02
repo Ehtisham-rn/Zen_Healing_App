@@ -21,6 +21,7 @@ import ContactSupportScreen from '../screens/ContactSupportScreen';
 import FAQScreen from '../screens/FAQScreen';
 import DoctorLoginScreen from '../screens/auth/DoctorLoginScreen';
 import DoctorRegisterScreen from '../screens/auth/DoctorRegisterScreen';
+import DoctorDashboardScreen from '../screens/doctor/DoctorDashboardScreen';
 import BookAppointmentScreen from '../screens/BookAppointmentScreen';
 import ArticlesScreen from '../screens/ArticlesScreen';
 import ArticleDetailScreen from '../screens/ArticleDetailScreen';
@@ -57,6 +58,17 @@ const ProfileStack = () => {
       <Stack.Screen name="FAQScreen" component={FAQScreen} />
       <Stack.Screen name="DoctorLoginScreen" component={DoctorLoginScreen} />
       <Stack.Screen name="DoctorRegisterScreen" component={DoctorRegisterScreen} />
+      <Stack.Screen name="DoctorDashboardScreen" component={DoctorDashboardScreen} />
+    </Stack.Navigator>
+  );
+};
+
+// Practitioners stack
+const PractitionersStack = () => {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="PractitionersScreen" component={PractitionersScreen} />
+      <Stack.Screen name="BookAppointmentScreen" component={BookAppointmentScreen} />
     </Stack.Navigator>
   );
 };
@@ -93,18 +105,18 @@ const MainTabNavigator = () => {
         }}
       />
       <Tab.Screen 
-        name="Appointments" 
-        component={HomeScreen} // Replace with actual Appointments screen when created
+        name="Articles" 
+        component={ArticlesScreen}
         options={{
-          tabBarLabel: 'Appointments',
+          tabBarLabel: 'Articles',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="calendar-outline" size={size} color={color} />
+            <Ionicons name="newspaper-outline" size={size} color={color} />
           ),
         }}
       />
       <Tab.Screen 
         name="Practitioners" 
-        component={PractitionersScreen}
+        component={PractitionersStack}
         options={{
           tabBarLabel: 'Practitioners',
           tabBarIcon: ({ color, size }) => (

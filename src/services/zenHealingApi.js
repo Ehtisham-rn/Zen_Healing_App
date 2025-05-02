@@ -10,11 +10,19 @@ const zenHealingApi = {
     // Get all doctors
     getAll: () => apiService.get('/doctors/v1'),
     
-    // Create a new doctor
+    // Create a new doctor - updated to match Postman collection
     create: (doctorData) => apiService.post('/doctors/v1/doctors', doctorData),
     
-    // Login a doctor
-    login: (credentials) => apiService.post('/doctor/login', credentials),
+    // Login a doctor - updated to match Postman collection
+    login: async (credentials) => {
+      try {
+        const result = await apiService.post('/doctor/login', credentials);
+        return result;
+      } catch (error) {
+        console.error('Error in doctor login:', error);
+        throw error;
+      }
+    },
     
     // Get a specific doctor by ID
     getById: (doctorId) => apiService.get(`/doctors/v1/${doctorId}`),

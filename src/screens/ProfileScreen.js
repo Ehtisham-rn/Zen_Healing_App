@@ -9,13 +9,12 @@ import {
   Alert,
   SafeAreaView
 } from 'react-native';
-import { ZEN_HEALING } from '../constants';
+import { ZEN_HEALING, STORAGE_KEYS } from '../constants';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { useSelector, useDispatch } from 'react-redux';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { STORAGE_KEYS } from '../constants';
+import * as storage from '../utils/storage';
 
 // Menu item component for profile options
 const ProfileMenuItem = ({ icon, iconType = 'Ionicons', title, subtitle, onPress, showChevron = true }) => {
@@ -104,8 +103,9 @@ const ProfileScreen = ({ navigation }) => {
           onPress: async () => {
             try {
               // Remove stored credentials
-              await AsyncStorage.removeItem(STORAGE_KEYS.DOCTOR_INFO);
-              await AsyncStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+              await storage.removeData(STORAGE_KEYS.DOCTOR_INFO);
+              await storage.removeData(STORAGE_KEYS.AUTH_TOKEN);
+              await storage.removeData(STORAGE_KEYS.DOCTOR_APPOINTMENTS);
               
               // Dispatch logout action
               // You would need to uncomment this if using Redux

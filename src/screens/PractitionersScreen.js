@@ -9,7 +9,8 @@ import {
   SafeAreaView,
   TextInput,
   ActivityIndicator,
-  Chip
+  Chip,
+  Alert
 } from 'react-native';
 import { ZEN_HEALING } from '../constants';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -145,7 +146,31 @@ const PractitionersScreen = ({ navigation, route }) => {
   // Handle booking appointment
   const handleBookAppointment = (doctor) => {
     setModalVisible(false);
-    navigation.navigate('BookAppointmentScreen', { doctor });
+    
+    // Make sure the doctor object is valid before navigating
+    if (doctor && doctor.id) {
+      // Clone the doctor object to ensure we're passing a clean object
+      const doctorData = { ...doctor };
+      
+      // Check which navigation stack we're in and navigate accordingly
+      // This fixes the navigation issue when coming from the tab navigator
+      if (navigation.getParent()?.getState()?.routeNames?.includes('HomeTab')) {
+        // We're in the HomeStack, direct navigation works
+        navigation.navigate('BookAppointmentScreen', { doctor: doctorData });
+      } else {
+        // We're likely in the tab navigator directly, use nested navigation
+        navigation.navigate('HomeTab', {
+          screen: 'BookAppointmentScreen',
+          params: { doctor: doctorData }
+        });
+      }
+    } else {
+      Alert.alert(
+        'Error',
+        'Unable to book appointment. Doctor information is invalid.',
+        [{ text: 'OK' }]
+      );
+    }
   };
   
   // Go back to previous screen

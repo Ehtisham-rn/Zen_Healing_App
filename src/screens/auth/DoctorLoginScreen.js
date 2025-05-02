@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -17,7 +17,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useDispatch } from 'react-redux';
 import { doctorLogin } from '../../state/slices/doctorSlice';
 
-const DoctorLoginScreen = ({ navigation }) => {
+const DoctorLoginScreen = ({ navigation, route }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -26,6 +26,13 @@ const DoctorLoginScreen = ({ navigation }) => {
   const [passwordError, setPasswordError] = useState('');
   
   const dispatch = useDispatch();
+  
+  // Check if email was passed from registration screen
+  useEffect(() => {
+    if (route.params?.email) {
+      setEmail(route.params.email);
+    }
+  }, [route.params]);
   
   const handleGoBack = () => {
     navigation.goBack();
@@ -74,28 +81,31 @@ const DoctorLoginScreen = ({ navigation }) => {
       // Prepare credentials
       const credentials = {
         email,
-        password
+        password: Number(password) || password, // Convert to number if possible
       };
       
       // Dispatch login action
       const resultAction = await dispatch(doctorLogin(credentials));
       
       if (doctorLogin.fulfilled.match(resultAction)) {
-        // Login successful
-        Alert.alert(
-          'Login Successful',
-          'You have successfully logged in.',
-          [{ text: 'OK', onPress: () => navigation.goBack() }]
-        );
+        // Login successful - directly navigate to dashboard without showing alert
+        console.log('Login successful:', resultAction.payload);
+        
+        // Navigate to DoctorDashboardScreen
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'DoctorDashboardScreen' }]
+        });
       } else {
         // Login failed
-        const errorMessage = resultAction.payload || 'Login failed. Please try again.';
+        const errorMessage = resultAction.payload || resultAction.error.message || 'Login failed. Please try again.';
         Alert.alert('Login Failed', errorMessage);
       }
     } catch (error) {
+      console.error('Login error:', error);
       Alert.alert(
         'Error',
-        error.message || 'An error occurred during login. Please try again.'
+        error.message || 'An unexpected error occurred during login. Please try again.'
       );
     } finally {
       setLoading(false);
