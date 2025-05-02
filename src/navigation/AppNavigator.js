@@ -21,6 +21,9 @@ import ContactSupportScreen from '../screens/ContactSupportScreen';
 import FAQScreen from '../screens/FAQScreen';
 import DoctorLoginScreen from '../screens/auth/DoctorLoginScreen';
 import DoctorRegisterScreen from '../screens/auth/DoctorRegisterScreen';
+import BookAppointmentScreen from '../screens/BookAppointmentScreen';
+import ArticlesScreen from '../screens/ArticlesScreen';
+import ArticleDetailScreen from '../screens/ArticleDetailScreen';
 
 // Import navigation theme and colors
 import { ZEN_HEALING } from '../constants';
@@ -35,6 +38,9 @@ const HomeStack = () => {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="HomeScreen" component={HomeScreen} />
       <Stack.Screen name="PractitionersScreen" component={PractitionersScreen} />
+      <Stack.Screen name="BookAppointmentScreen" component={BookAppointmentScreen} />
+      <Stack.Screen name="ArticlesScreen" component={ArticlesScreen} />
+      <Stack.Screen name="ArticleDetailScreen" component={ArticleDetailScreen} />
     </Stack.Navigator>
   );
 };

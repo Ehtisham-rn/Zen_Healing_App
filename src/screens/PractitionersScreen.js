@@ -8,7 +8,8 @@ import {
   Image,
   SafeAreaView,
   TextInput,
-  ActivityIndicator
+  ActivityIndicator,
+  Chip
 } from 'react-native';
 import { ZEN_HEALING } from '../constants';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -54,13 +55,17 @@ const DoctorListItem = ({ doctor, onPress, specialityName }) => {
   );
 };
 
-const PractitionersScreen = ({ navigation }) => {
+const PractitionersScreen = ({ navigation, route }) => {
   const { 
     allDoctors, 
     loading, 
     errors, 
     getSpecialityById,
-    getLocationById 
+    getLocationById,
+    getSymptomById,
+    filterDoctors,
+    getDoctorsBySpeciality,
+    getDoctorsBySymptom
   } = useDoctors();
   
   // State for doctor details modal
@@ -71,26 +76,61 @@ const PractitionersScreen = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredDoctors, setFilteredDoctors] = useState([]);
   
-  // Filter doctors with status 'accepted'
+  // State for active filter
+  const [activeFilter, setActiveFilter] = useState(null);
+  
+  // Check if there's a filter or search query in route params
+  useEffect(() => {
+    if (route.params?.filter) {
+      const { filter } = route.params;
+      setActiveFilter(filter);
+    }
+    
+    if (route.params?.searchQuery) {
+      setSearchQuery(route.params.searchQuery);
+    }
+  }, [route.params]);
+  
+  // Filter doctors with status 'accepted' and apply any additional filters
   useEffect(() => {
     if (allDoctors.length > 0) {
-      const acceptedDoctors = allDoctors.filter(
+      let acceptedDoctors = allDoctors.filter(
         doctor => doctor.status === 'accepted'
       );
       
-      if (searchQuery.trim() === '') {
-        setFilteredDoctors(acceptedDoctors);
-      } else {
+      // Apply active filter if exists
+      if (activeFilter) {
+        if (activeFilter.type === 'specialty') {
+          acceptedDoctors = acceptedDoctors.filter(
+            doctor => doctor.speciality_id === activeFilter.id
+          );
+        } else if (activeFilter.type === 'symptom') {
+          acceptedDoctors = acceptedDoctors.filter(
+            doctor => doctor.symptoms && doctor.symptoms.some(s => s.id === activeFilter.id)
+          );
+        }
+      }
+      
+      // Apply search filter
+      if (searchQuery.trim() !== '') {
         const query = searchQuery.toLowerCase();
-        const searchResults = acceptedDoctors.filter(doctor => 
+        acceptedDoctors = acceptedDoctors.filter(doctor => 
           doctor.name.toLowerCase().includes(query) ||
           (doctor.speciality && doctor.speciality.name && 
             doctor.speciality.name.toLowerCase().includes(query))
         );
-        setFilteredDoctors(searchResults);
       }
+      
+      setFilteredDoctors(acceptedDoctors);
     }
-  }, [allDoctors, searchQuery]);
+  }, [allDoctors, searchQuery, activeFilter]);
+  
+  // Clear active filter
+  const handleClearFilter = () => {
+    setActiveFilter(null);
+    // Update navigation params to reflect filter removal
+    navigation.setParams({ filter: null });
+  };
   
   // Modal handlers
   const handleOpenModal = (doctor) => {
@@ -138,9 +178,9 @@ const PractitionersScreen = ({ navigation }) => {
       <View style={styles.emptyContainer}>
         <Ionicons name="people" size={64} color={ZEN_HEALING.COLORS.TEXT.SECONDARY} />
         <Text style={styles.emptyText}>No practitioners found</Text>
-        {searchQuery.trim() !== '' && (
+        {(searchQuery.trim() !== '' || activeFilter) && (
           <Text style={styles.emptySubtext}>
-            Try adjusting your search criteria
+            Try adjusting your search criteria or removing filters
           </Text>
         )}
       </View>
@@ -181,6 +221,21 @@ const PractitionersScreen = ({ navigation }) => {
           </TouchableOpacity>
         )}
       </View>
+      
+      {/* Active Filter */}
+      {activeFilter && (
+        <View style={styles.filterContainer}>
+          <View style={styles.activeFilterChip}>
+            <Text style={styles.activeFilterText}>
+              {activeFilter.type === 'specialty' ? 'Specialty: ' : 'Symptom: '}
+              {activeFilter.name}
+            </Text>
+            <TouchableOpacity onPress={handleClearFilter}>
+              <Ionicons name="close-circle" size={20} color={ZEN_HEALING.COLORS.PRIMARY} />
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
       
       {/* Results Count */}
       {filteredDoctors.length > 0 && (
@@ -249,6 +304,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 16,
     margin: 16,
+    marginBottom: 8,
   },
   searchIcon: {
     marginRight: 8,
@@ -261,6 +317,28 @@ const styles = StyleSheet.create({
   },
   clearSearch: {
     padding: 4,
+  },
+  filterContainer: {
+    paddingHorizontal: 16,
+    marginBottom: 8,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  activeFilterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: ZEN_HEALING.COLORS.PRIMARY + '20', // With opacity
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  activeFilterText: {
+    fontSize: 14,
+    color: ZEN_HEALING.COLORS.PRIMARY,
+    fontWeight: '500',
+    marginRight: 4,
   },
   resultsContainer: {
     paddingHorizontal: 16,

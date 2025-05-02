@@ -85,7 +85,7 @@ export const updateAppointmentStatus = createAsyncThunk(
   async ({ appointmentId, status }, { rejectWithValue }) => {
     try {
       const response = await zenHealingApi.appointments.updateStatus(appointmentId, status);
-      return response;
+      return { ...response, appointmentId, status };
     } catch (error) {
       return rejectWithValue(error.message || 'Failed to update appointment status');
     }
@@ -153,8 +153,9 @@ const appointmentSlice = createSlice({
         state.error.all = null;
       })
       .addCase(fetchAllAppointments.fulfilled, (state, action) => {
-        state.appointments = action.payload;
         state.loading.all = false;
+        state.appointments = action.payload;
+        state.userAppointments = action.payload;
       })
       .addCase(fetchAllAppointments.rejected, (state, action) => {
         state.loading.all = false;
@@ -167,8 +168,8 @@ const appointmentSlice = createSlice({
         state.error.all = null;
       })
       .addCase(fetchUserAppointments.fulfilled, (state, action) => {
-        state.userAppointments = action.payload;
         state.loading.all = false;
+        state.userAppointments = action.payload;
       })
       .addCase(fetchUserAppointments.rejected, (state, action) => {
         state.loading.all = false;
@@ -181,8 +182,8 @@ const appointmentSlice = createSlice({
         state.error.all = null;
       })
       .addCase(fetchDoctorAppointments.fulfilled, (state, action) => {
-        state.doctorAppointments = action.payload;
         state.loading.all = false;
+        state.doctorAppointments = action.payload;
       })
       .addCase(fetchDoctorAppointments.rejected, (state, action) => {
         state.loading.all = false;
@@ -195,10 +196,9 @@ const appointmentSlice = createSlice({
         state.error.create = null;
       })
       .addCase(createAppointment.fulfilled, (state, action) => {
-        // Add the new appointment to both lists
+        state.loading.create = false;
         state.appointments.push(action.payload);
         state.userAppointments.push(action.payload);
-        state.loading.create = false;
       })
       .addCase(createAppointment.rejected, (state, action) => {
         state.loading.create = false;
@@ -211,27 +211,26 @@ const appointmentSlice = createSlice({
         state.error.updateStatus = null;
       })
       .addCase(updateAppointmentStatus.fulfilled, (state, action) => {
-        // Update the appointment in all relevant lists
-        const updatedAppointment = action.payload;
-        
-        state.appointments = state.appointments.map(appointment => 
-          appointment.id === updatedAppointment.id ? updatedAppointment : appointment
-        );
-        
-        state.userAppointments = state.userAppointments.map(appointment => 
-          appointment.id === updatedAppointment.id ? updatedAppointment : appointment
-        );
-        
-        state.doctorAppointments = state.doctorAppointments.map(appointment => 
-          appointment.id === updatedAppointment.id ? updatedAppointment : appointment
-        );
-        
-        // If there's a selected appointment and it's the one we just updated, update it
-        if (state.selectedAppointment && state.selectedAppointment.id === updatedAppointment.id) {
-          state.selectedAppointment = updatedAppointment;
-        }
-        
         state.loading.updateStatus = false;
+        
+        // Update status in all appointment arrays
+        const { appointmentId, status } = action.payload;
+        
+        const updateAppointmentInArray = (appointments) => {
+          const index = appointments.findIndex(a => a.id === appointmentId);
+          if (index !== -1) {
+            appointments[index].status = status;
+          }
+        };
+        
+        updateAppointmentInArray(state.appointments);
+        updateAppointmentInArray(state.userAppointments);
+        updateAppointmentInArray(state.doctorAppointments);
+        
+        // Update selected appointment if it's the one being updated
+        if (state.selectedAppointment && state.selectedAppointment.id === appointmentId) {
+          state.selectedAppointment.status = status;
+        }
       })
       .addCase(updateAppointmentStatus.rejected, (state, action) => {
         state.loading.updateStatus = false;
@@ -256,4 +255,5 @@ export const selectUserAppointments = (state) => state.appointment.userAppointme
 export const selectDoctorAppointments = (state) => state.appointment.doctorAppointments;
 export const selectSelectedAppointment = (state) => state.appointment.selectedAppointment;
 export const selectAppointmentLoading = (state) => state.appointment.loading;
-export const selectAppointmentErrors = (state) => state.appointment.error; 
+export const selectAppointmentErrors = (state) => state.appointment.error;
+export const selectCreateAppointmentLoading = (state) => state.appointment.loading.create; 

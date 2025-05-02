@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Dimensions,
   Animated,
+  useWindowDimensions,
 } from 'react-native';
 import { ZEN_HEALING } from '../../constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,8 +16,6 @@ import { useDispatch } from 'react-redux';
 import { updateOnboarding } from '../../state/slices/appSlice';
 import GradientView from '../../components/GradientView';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-
-const { width } = Dimensions.get('window');
 
 // Onboarding steps data
 const onboardingSteps = [
@@ -47,6 +46,7 @@ const onboardingSteps = [
 ];
 
 const OnboardingStepsScreen = ({ navigation }) => {
+  const { width, height } = useWindowDimensions();
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef(null);
   const scrollX = useRef(new Animated.Value(0)).current;
@@ -115,8 +115,13 @@ const OnboardingStepsScreen = ({ navigation }) => {
       extrapolate: 'clamp',
     });
 
+    // Calculate dynamic sizes based on screen dimensions
+    const iconSize = Math.min(width, height) * 0.12;
+    const iconFontSize = Math.min(width, height) * 0.06;
+    const imageSize = Math.min(width * 0.7, height * 0.35);
+
     return (
-      <View style={styles.slide}>
+      <View style={[styles.slide, { width }]}>
         <Animated.View 
           style={[
             styles.imageContainer,
@@ -126,16 +131,26 @@ const OnboardingStepsScreen = ({ navigation }) => {
             }
           ]}
         >
-          <View style={styles.iconCircle}>
+          <View 
+            style={[
+              styles.iconCircle,
+              { 
+                width: iconSize, 
+                height: iconSize, 
+                borderRadius: iconSize / 2,
+                marginBottom: height * 0.02,
+              }
+            ]}
+          >
             <Ionicons 
               name={item.iconName} 
-              size={40} 
+              size={iconFontSize} 
               color={ZEN_HEALING.COLORS.PRIMARY}
             />
           </View>
           <Image 
             source={item.image} 
-            style={styles.image} 
+            style={{ width: imageSize, height: imageSize }} 
             resizeMode="contain"
           />
         </Animated.View>
@@ -149,8 +164,12 @@ const OnboardingStepsScreen = ({ navigation }) => {
             }
           ]}
         >
-          <Text style={styles.title}>{item.title}</Text>
-          <Text style={styles.description}>{item.description}</Text>
+          <Text style={[styles.title, { fontSize: Math.min(28, width * 0.07) }]}>
+            {item.title}
+          </Text>
+          <Text style={[styles.description, { fontSize: Math.min(16, width * 0.04) }]}>
+            {item.description}
+          </Text>
         </Animated.View>
       </View>
     );
@@ -241,7 +260,7 @@ const OnboardingStepsScreen = ({ navigation }) => {
         <View style={styles.footer}>
           <GradientView
             colors={[ZEN_HEALING.COLORS.PRIMARY, ZEN_HEALING.COLORS.SECONDARY]}
-            style={styles.nextButton}
+            style={[styles.nextButton, { width: width * 0.8 }]}
           >
             <TouchableOpacity 
               onPress={goToNextSlide}
@@ -286,53 +305,45 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   slide: {
-    width,
-    paddingHorizontal: 24,
+    paddingHorizontal: '5%',
     alignItems: 'center',
     justifyContent: 'center',
   },
   imageContainer: {
     alignItems: 'center',
-    marginBottom: 40,
+    justifyContent: 'center',
+    marginBottom: '8%',
+    width: '100%',
   },
   iconCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
     backgroundColor: 'white',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
     shadowColor: ZEN_HEALING.COLORS.SHADOW,
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
     elevation: 8,
   },
-  image: {
-    width: width * 0.7,
-    height: width * 0.7,
-  },
   textContainer: {
     alignItems: 'center',
-    maxWidth: '85%',
+    width: '85%',
+    paddingHorizontal: '3%',
   },
   title: {
-    fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 16,
+    marginBottom: '4%',
     color: ZEN_HEALING.COLORS.TEXT.PRIMARY,
     textAlign: 'center',
   },
   description: {
-    fontSize: 16,
     textAlign: 'center',
     color: ZEN_HEALING.COLORS.TEXT.SECONDARY,
     lineHeight: 24,
   },
   paginationContainer: {
     alignItems: 'center',
-    paddingVertical: 20,
+    paddingVertical: '4%',
   },
   dotsContainer: {
     flexDirection: 'row',
@@ -351,12 +362,11 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   footer: {
-    padding: 24,
-    paddingBottom: 32,
+    padding: '5%',
+    paddingBottom: '7%',
     alignItems: 'center',
   },
   nextButton: {
-    width: '80%',
     borderRadius: 16,
     overflow: 'hidden',
   },

@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "7a4cc4e7-1798-47eb-9428-2d3a87015254",
 		"name": "Zen Healing",
-		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "32990253"
 	},
 	"item": [
@@ -26,7 +26,17 @@
 								}
 							}
 						},
-						"url": "{{local}}/api/doctors/v1"
+						"url": {
+							"raw": "{{live}}/api/doctors/v1",
+							"host": [
+								"{{live}}"
+							],
+							"path": [
+								"api",
+								"doctors",
+								"v1"
+							]
+						}
 					},
 					"response": []
 				},
@@ -50,7 +60,18 @@
 								}
 							}
 						},
-						"url": "{{local}}/api/doctors/v1/doctors"
+						"url": {
+							"raw": "{{Live}}/api/doctors/v1/doctors",
+							"host": [
+								"{{Live}}"
+							],
+							"path": [
+								"api",
+								"doctors",
+								"v1",
+								"doctors"
+							]
+						}
 					},
 					"response": []
 				},
@@ -74,7 +95,17 @@
 								}
 							}
 						},
-						"url": "{{local}}/api/doctor/login"
+						"url": {
+							"raw": "{{local}}/api/doctor/login",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"doctor",
+								"login"
+							]
+						}
 					},
 					"response": []
 				}
@@ -88,7 +119,17 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": "{{local}}/api/appointments/"
+						"url": {
+							"raw": "{{local}}/api/appointments/",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"appointments",
+								""
+							]
+						}
 					},
 					"response": []
 				},
@@ -112,7 +153,16 @@
 								}
 							}
 						},
-						"url": "{{local}}/api/appointments"
+						"url": {
+							"raw": "{{local}}/api/appointments",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"appointments"
+							]
+						}
 					},
 					"response": []
 				}
@@ -132,7 +182,17 @@
 								"type": "text"
 							}
 						],
-						"url": "{{local}}/api/v1/specialities"
+						"url": {
+							"raw": "{{local}}/api/v1/specialities",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"specialities"
+							]
+						}
 					},
 					"response": []
 				}
@@ -146,7 +206,17 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": "{{local}}/api/v1/symptoms"
+						"url": {
+							"raw": "{{local}}/api/v1/symptoms",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"symptoms"
+							]
+						}
 					},
 					"response": []
 				}
@@ -160,7 +230,17 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": "{{local}}/api/v1/locations"
+						"url": {
+							"raw": "{{local}}/api/v1/locations",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"locations"
+							]
+						}
 					},
 					"response": []
 				}
@@ -183,7 +263,17 @@
 								}
 							}
 						},
-						"url": "{{local}}/api/v1/contact"
+						"url": {
+							"raw": "{{local}}/api/v1/contact",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"contact"
+							]
+						}
 					},
 					"response": []
 				}
@@ -196,7 +286,17 @@
 					"name": "All Articles",
 					"request": {
 						"method": "GET",
-						"header": []
+						"header": [],
+						"url": {
+							"raw": "{{live}}/api/articles",
+							"host": [
+								"{{live}}"
+							],
+							"path": [
+								"api",
+								"articles"
+							]
+						}
 					},
 					"response": []
 				},
@@ -204,7 +304,18 @@
 					"name": "Specific Article",
 					"request": {
 						"method": "GET",
-						"header": []
+						"header": [],
+						"url": {
+							"raw": "{{live}}/api/articles/{id}",
+							"host": [
+								"{{live}}"
+							],
+							"path": [
+								"api",
+								"articles",
+								"{id}"
+							]
+						}
 					},
 					"response": []
 				}

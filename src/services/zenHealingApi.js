@@ -62,13 +62,13 @@ const zenHealingApi = {
     submit: (formData) => apiService.post('/v1/contact', formData),
   },
   
-  // Articles endpoints
+  // Articles endpoints - updated to match Postman collection
   articles: {
     // Get all articles
-    getAll: () => apiService.get('/v1/articles'),
+    getAll: () => apiService.get('/articles'),
     
-    // Get a specific article
-    getById: (articleId) => apiService.get(`/v1/articles/${articleId}`),
+    // Get a specific article by ID
+    getById: (articleId) => apiService.get(`/articles/${articleId}`),
   },
 };
 

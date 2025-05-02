@@ -22,10 +22,10 @@ import { selectCurrentDoctor } from '../state/slices/doctorSlice';
 import { ZEN_HEALING } from '../constants';
 
 /**
- * Custom hook for working with appointments
- * @returns {Object} - Methods and data for working with appointments
+ * Hook for managing appointments in the application
+ * Provides functions to interact with appointments state
  */
-const useAppointments = () => {
+export const useAppointments = () => {
   const dispatch = useDispatch();
   
   // Select data from Redux store

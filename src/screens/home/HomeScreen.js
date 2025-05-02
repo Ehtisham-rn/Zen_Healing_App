@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, ActivityIndicator } from 'react-native';
 import { ZEN_HEALING } from '../../constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
 import useDoctors from '../../hooks/useDoctors';
+import useArticles from '../../hooks/useArticles';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -19,6 +20,7 @@ import CategoryCard from '../../components/CategoryCard';
 import PractitionerCard from '../../components/PractitionerCard';
 import AppointmentCard from '../../components/AppointmentCard';
 import ArticleCard from '../../components/ArticleCard';
+import TagCard from '../../components/TagCard';
 import FloatingActionButton from '../../components/FloatingActionButton';
 import DoctorDetailsModal from '../../components/DoctorDetailsModal';
 
@@ -33,12 +35,20 @@ const HomeScreen = ({ navigation }) => {
     initializeData, 
     isInitialized,
     getSpecialityById,
-    getLocationById
+    getLocationById,
+    getSymptomById,
+    filterDoctors
   } = useDoctors();
+  
+  // Add articles hook
+  const { featuredArticles, loading: loadingArticles } = useArticles();
   
   // State for doctor details modal
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+
+  // Add state for search input
+  const [searchInput, setSearchInput] = useState('');
 
   // Initialize data on first render
   useEffect(() => {
@@ -87,9 +97,28 @@ const HomeScreen = ({ navigation }) => {
     navigation.navigate('PractitionersScreen');
   };
 
+  const handleSearchSubmit = () => {
+    // Navigate to practitioners screen with search query if not empty
+    if (searchInput.trim()) {
+      navigation.navigate('PractitionersScreen', { searchQuery: searchInput.trim() });
+    } else {
+      navigation.navigate('PractitionersScreen');
+    }
+  };
+
   const handleSeeAllArticles = () => {
     // Navigate to articles screen
     navigation.navigate('ArticlesScreen');
+  };
+
+  const handleSeeAllSpecialities = () => {
+    // Navigate to practitioners with no filters applied
+    navigation.navigate('PractitionersScreen');
+  };
+
+  const handleSeeAllSymptoms = () => {
+    // Navigate to practitioners with no filters applied
+    navigation.navigate('PractitionersScreen');
   };
 
   const handleCategoryPress = (category) => {
@@ -114,13 +143,80 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const handleArticlePress = (article) => {
-    // Navigate to article details
-    navigation.navigate('ArticleDetailScreen', { article });
+    navigation.navigate('ArticleDetailScreen', { articleId: article.id });
   };
 
   const handleQuickBookPress = () => {
     // Navigate to quick booking screen
     navigation.navigate('BookAppointmentScreen');
+  };
+
+  // Handle specialty or symptom tag press
+  const handleTagPress = (item) => {
+    if (item.type === 'specialty') {
+      // Navigate to practitioners screen with specialty filter
+      navigation.navigate('PractitionersScreen', { 
+        filter: { type: 'specialty', id: item.id, name: item.name }
+      });
+    } else if (item.type === 'symptom') {
+      // Navigate to practitioners screen with symptom filter
+      navigation.navigate('PractitionersScreen', { 
+        filter: { type: 'symptom', id: item.id, name: item.name }
+      });
+    }
+  };
+
+  // Get icon name for specialty based on name
+  const getSpecialtyIconName = (name) => {
+    const lowercaseName = name.toLowerCase();
+    if (lowercaseName.includes('yoga')) return 'body-outline';
+    if (lowercaseName.includes('meditation')) return 'brain'; 
+    if (lowercaseName.includes('massage')) return 'hand-left-outline';
+    if (lowercaseName.includes('nutrition')) return 'nutrition-outline';
+    if (lowercaseName.includes('acupuncture')) return 'fitness-outline';
+    if (lowercaseName.includes('therapy')) return 'heart-outline';
+    if (lowercaseName.includes('coach')) return 'people-outline';
+    return 'medkit-outline';
+  };
+
+  // Get icon type for specialty
+  const getSpecialtyIconType = (name) => {
+    const lowercaseName = name.toLowerCase();
+    if (lowercaseName.includes('brain')) return 'FontAwesome5';
+    return 'Ionicons';
+  };
+
+  // Get icon name for symptom based on name
+  const getSymptomIconName = (name) => {
+    const lowercaseName = name.toLowerCase();
+    if (lowercaseName.includes('stress')) return 'head-outline';
+    if (lowercaseName.includes('pain')) return 'bandage-outline';
+    if (lowercaseName.includes('anxiety')) return 'pulse-outline';
+    if (lowercaseName.includes('sleep')) return 'bed-outline';
+    if (lowercaseName.includes('digestive')) return 'nutrition-outline';
+    if (lowercaseName.includes('energy')) return 'battery-charging-outline';
+    if (lowercaseName.includes('fitness')) return 'fitness-outline';
+    return 'medical-outline';
+  };
+
+  // Get background color in pastel tones
+  const getTagBackgroundColor = (index, type) => {
+    const pastelColors = [
+      '#E3F2FD', // Light Blue
+      '#E8F5E9', // Light Green
+      '#FFF3E0', // Light Orange
+      '#F3E5F5', // Light Purple
+      '#E1F5FE', // Lighter Blue
+      '#E0F2F1', // Light Teal
+      '#FFF9C4', // Light Yellow
+      '#F8BBD0', // Light Pink
+    ];
+
+    // Use different color schemes for specialties and symptoms
+    const colorOffset = type === 'specialty' ? 0 : 4;
+    const colorIndex = (index + colorOffset) % pastelColors.length;
+    
+    return pastelColors[colorIndex];
   };
 
   return (
@@ -154,51 +250,118 @@ const HomeScreen = ({ navigation }) => {
           </TouchableOpacity>
         </GradientView>
 
-        {/* Search Bar */}
-        <TouchableOpacity style={styles.searchBar}>
-          <Ionicons 
-            name="search" 
-            size={20} 
-            color={ZEN_HEALING.COLORS.TEXT.SECONDARY} 
-            style={styles.searchIcon}
-          />
-          <Text style={styles.searchPlaceholder}>Search for practitioners...</Text>
-        </TouchableOpacity>
+        {/* Beautiful Search Card */}
+        <View style={styles.searchCardContainer}>
+          <GradientView
+            colors={[ZEN_HEALING.COLORS.PRIMARY, ZEN_HEALING.COLORS.SECONDARY]}
+            style={styles.searchCard}
+          >
+            <Text style={styles.searchCardTitle}>Let's Find Your Doctor</Text>
+            
+            <View style={styles.searchCardIconsRow}>
+              <View style={styles.searchCardIconContainer}>
+                <Ionicons name="medical" size={24} color="#fff" />
+              </View>
+              <View style={styles.searchCardIconContainer}>
+                <Ionicons name="heart" size={24} color="#fff" />
+              </View>
+              <View style={styles.searchCardIconContainer}>
+                <FontAwesome5 name="user-md" size={22} color="#fff" />
+              </View>
+              <View style={styles.searchCardIconContainer}>
+                <Ionicons name="fitness" size={24} color="#fff" />
+              </View>
+            </View>
+            
+            <View style={styles.searchCardInputContainer}>
+              <Ionicons 
+                name="search" 
+                size={20} 
+                color={ZEN_HEALING.COLORS.TEXT.SECONDARY} 
+                style={styles.searchCardInputIcon}
+              />
+              <TextInput
+                style={styles.searchCardInput}
+                placeholder="Search for practitioners..."
+                placeholderTextColor={ZEN_HEALING.COLORS.TEXT.SECONDARY}
+                value={searchInput}
+                onChangeText={setSearchInput}
+                onSubmitEditing={handleSearchSubmit}
+                returnKeyType="search"
+              />
+              {searchInput.length > 0 && (
+                <TouchableOpacity onPress={() => setSearchInput('')}>
+                  <Ionicons 
+                    name="close-circle" 
+                    size={20} 
+                    color={ZEN_HEALING.COLORS.TEXT.SECONDARY}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+          </GradientView>
+        </View>
 
-        {/* Categories Section */}
+        {/* Specialties Section */}
         <CardSection 
-          title="Find by Category" 
-          showSeeAll={false}
+          title="Browse by Specialty" 
+          showSeeAll={true}
+          onSeeAllPress={handleSeeAllSpecialities}
         >
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoriesContainer}
+            contentContainerStyle={styles.tagsContainer}
           >
-            <CategoryCard 
-              title="Yoga" 
-              iconName="body-outline" 
-              backgroundColor="#E3F2FD"
-              onPress={() => handleCategoryPress('Yoga')}
-            />
-            <CategoryCard 
-              title="Meditation" 
-              iconName="medkit-outline" 
-              backgroundColor="#E8F5E9"
-              onPress={() => handleCategoryPress('Meditation')}
-            />
-            <CategoryCard 
-              title="Acupuncture" 
-              iconName="fitness-outline" 
-              backgroundColor="#FFF3E0"
-              onPress={() => handleCategoryPress('Acupuncture')}
-            />
-            <CategoryCard 
-              title="Nutrition" 
-              iconName="nutrition-outline" 
-              backgroundColor="#F3E5F5"
-              onPress={() => handleCategoryPress('Nutrition')}
-            />
+            {specialities.length > 0 ? (
+              specialities.map((speciality, index) => (
+                <TagCard
+                  key={speciality.id}
+                  id={speciality.id}
+                  name={speciality.name}
+                  iconName={getSpecialtyIconName(speciality.name)}
+                  iconType={getSpecialtyIconType(speciality.name)}
+                  backgroundColor={getTagBackgroundColor(index, 'specialty')}
+                  onPress={() => handleTagPress({ id: speciality.id, name: speciality.name, type: 'specialty' })}
+                  type="specialty"
+                />
+              ))
+            ) : (
+              <View style={styles.loadingContainer}>
+                <Text style={styles.loadingText}>Loading specialties...</Text>
+              </View>
+            )}
+          </ScrollView>
+        </CardSection>
+
+        {/* Common Symptoms Section */}
+        <CardSection 
+          title="Common Symptoms" 
+          showSeeAll={true}
+          onSeeAllPress={handleSeeAllSymptoms}
+        >
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.tagsContainer}
+          >
+            {symptoms.length > 0 ? (
+              symptoms.slice(0, 8).map((symptom, index) => (
+                <TagCard
+                  key={symptom.id}
+                  id={symptom.id}
+                  name={symptom.name}
+                  iconName={getSymptomIconName(symptom.name)}
+                  backgroundColor={getTagBackgroundColor(index, 'symptom')}
+                  onPress={() => handleTagPress({ id: symptom.id, name: symptom.name, type: 'symptom' })}
+                  type="symptom"
+                />
+              ))
+            ) : (
+              <View style={styles.loadingContainer}>
+                <Text style={styles.loadingText}>Loading symptoms...</Text>
+              </View>
+            )}
           </ScrollView>
         </CardSection>
 
@@ -266,37 +429,59 @@ const HomeScreen = ({ navigation }) => {
           onSeeAllPress={handleSeeAllArticles}
           style={{ marginBottom: 75 }}
         >
-          <ArticleCard
-            title="Benefits of Mindfulness Meditation"
-            excerpt="Discover how daily mindfulness practice can reduce stress and improve overall well-being."
-            date="June 15, 2023"
-            category="Meditation"
-            readTime={5}
-            onPress={() => handleArticlePress({
-              id: '1',
-              title: 'Benefits of Mindfulness Meditation',
-              excerpt: 'Discover how daily mindfulness practice can reduce stress and improve overall well-being.',
-              date: 'June 15, 2023',
-              category: 'Meditation',
-              readTime: 5
-            })}
-          />
+          {loadingArticles ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color={ZEN_HEALING.COLORS.PRIMARY} />
+              <Text style={styles.loadingText}>Loading articles...</Text>
+            </View>
+          ) : featuredArticles.length > 0 ? (
+            featuredArticles.map((article, index) => (
+              <ArticleCard
+                key={article.id || index}
+                title={article.title}
+                excerpt={article.excerpt}
+                date={article.date || article.published_at}
+                imageUri={article.image_url}
+                category={article.category}
+                readTime={article.read_time || 5}
+                onPress={() => handleArticlePress(article)}
+              />
+            ))
+          ) : (
+            <>
+              <ArticleCard
+                title="Benefits of Mindfulness Meditation"
+                excerpt="Discover how daily mindfulness practice can reduce stress and improve overall well-being."
+                date="June 15, 2023"
+                category="Meditation"
+                readTime={5}
+                onPress={() => handleArticlePress({
+                  id: '1',
+                  title: 'Benefits of Mindfulness Meditation',
+                  excerpt: 'Discover how daily mindfulness practice can reduce stress and improve overall well-being.',
+                  date: 'June 15, 2023',
+                  category: 'Meditation',
+                  readTime: 5
+                })}
+              />
 
-          <ArticleCard
-            title="Holistic Approaches to Stress Management"
-            excerpt="Learn about natural techniques to manage stress and anxiety without medication."
-            date="June 10, 2023"
-            category="Wellness"
-            readTime={7}
-            onPress={() => handleArticlePress({
-              id: '2',
-              title: 'Holistic Approaches to Stress Management',
-              excerpt: 'Learn about natural techniques to manage stress and anxiety without medication.',
-              date: 'June 10, 2023',
-              category: 'Wellness',
-              readTime: 7
-            })}
-          />
+              <ArticleCard
+                title="Holistic Approaches to Stress Management"
+                excerpt="Learn about natural techniques to manage stress and anxiety without medication."
+                date="June 10, 2023"
+                category="Wellness"
+                readTime={7}
+                onPress={() => handleArticlePress({
+                  id: '2',
+                  title: 'Holistic Approaches to Stress Management',
+                  excerpt: 'Learn about natural techniques to manage stress and anxiety without medication.',
+                  date: 'June 10, 2023',
+                  category: 'Wellness',
+                  readTime: 7
+                })}
+              />
+            </>
+          )}
         </CardSection>
       </ScrollView>
 
@@ -349,25 +534,60 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 70,
   },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: ZEN_HEALING.COLORS.BACKGROUND.SECONDARY,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+  searchCardContainer: {
     marginVertical: 16,
   },
-  searchIcon: {
+  searchCard: {
+    borderRadius: 16,
+    padding: 20,
+    overflow: 'hidden',
+  },
+  searchCardTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  searchCardIconsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 20,
+  },
+  searchCardIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  searchCardInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  searchCardInputIcon: {
     marginRight: 8,
   },
-  searchPlaceholder: {
+  searchCardInputPlaceholder: {
     color: ZEN_HEALING.COLORS.TEXT.SECONDARY,
     fontSize: 14,
   },
-  categoriesContainer: {
+  searchCardInput: {
+    flex: 1,
+    color: ZEN_HEALING.COLORS.TEXT.PRIMARY,
+    fontSize: 14,
+    paddingVertical: 6,
+    height: 40,
+  },
+  tagsContainer: {
     paddingVertical: 8,
     paddingRight: 24,
+    flexWrap: 'wrap',
   },
   practitionersContainer: {
     paddingVertical: 8,
@@ -408,6 +628,16 @@ const styles = StyleSheet.create({
   },
   resetOnboardingIcon: {
     marginLeft: 8,
+  },
+  loadingContainer: {
+    padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 150,
+  },
+  loadingText: {
+    color: ZEN_HEALING.COLORS.TEXT.SECONDARY,
+    fontSize: 14,
   },
 });
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, useWindowDimensions } from 'react-native';
 import { ZEN_HEALING } from '../../constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -8,6 +8,13 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import GradientView from '../../components/GradientView';
 
 const WelcomeScreen = ({ navigation }) => {
+  const { width, height } = useWindowDimensions();
+  
+  // Calculate dynamic sizes based on screen dimensions
+  const illustrationHeight = Math.min(220, height * 0.25);
+  const iconSize = Math.min(24, width * 0.06);
+  const featureIconSize = Math.min(50, width * 0.12);
+  
   const handleGetStarted = () => {
     navigation.navigate('OnboardingSteps');
   };
@@ -22,71 +29,101 @@ const WelcomeScreen = ({ navigation }) => {
         <View style={styles.header}>
           <Image
             source={require('../../../assets/welcome.png')}
-            style={styles.illustration}
+            style={[styles.illustration, { height: illustrationHeight }]}
             resizeMode="contain"
           />
         </View>
         
-        <View style={styles.contentCard}>
+        <View style={[styles.contentCard, { marginTop: -illustrationHeight * 0.2 }]}>
           <Text style={styles.welcomeLabel}>WELCOME TO</Text>
-          <Text style={styles.title}>Zen Healing Hub</Text>
+          <Text style={[styles.title, { fontSize: Math.min(30, width * 0.07) }]}>Zen Healing Hub</Text>
           
-          <Text style={styles.description}>
+          <Text style={[styles.description, { fontSize: Math.min(16, width * 0.04) }]}>
             Your one-stop platform for holistic health and wellness. Connect with top practitioners
             and begin your journey to wellness today.
           </Text>
           
           <View style={styles.divider} />
           
-          <Text style={styles.featuresTitle}>The Zen Experience</Text>
+          <Text style={[styles.featuresTitle, { fontSize: Math.min(18, width * 0.045) }]}>The Zen Experience</Text>
           
           <View style={styles.features}>
             <View style={styles.featureItem}>
-              <View style={[styles.featureIcon, { backgroundColor: ZEN_HEALING.COLORS.BACKGROUND.TERTIARY }]}>
+              <View 
+                style={[
+                  styles.featureIcon, 
+                  { 
+                    backgroundColor: ZEN_HEALING.COLORS.BACKGROUND.TERTIARY,
+                    width: featureIconSize,
+                    height: featureIconSize,
+                    borderRadius: featureIconSize * 0.3
+                  }
+                ]}
+              >
                 <MaterialCommunityIcons 
                   name="doctor" 
-                  size={24} 
+                  size={iconSize} 
                   color={ZEN_HEALING.COLORS.PRIMARY}
                   style={styles.icon}
                 />
               </View>
               <View style={styles.featureText}>
-                <Text style={styles.featureTitle}>Expert Practitioners</Text>
-                <Text style={styles.featureDescription}>
+                <Text style={[styles.featureTitle, { fontSize: Math.min(16, width * 0.04) }]}>Expert Practitioners</Text>
+                <Text style={[styles.featureDescription, { fontSize: Math.min(14, width * 0.035) }]}>
                   Connect with certified holistic health specialists
                 </Text>
               </View>
             </View>
             
             <View style={styles.featureItem}>
-              <View style={[styles.featureIcon, { backgroundColor: ZEN_HEALING.COLORS.BACKGROUND.TERTIARY }]}>
+              <View 
+                style={[
+                  styles.featureIcon, 
+                  { 
+                    backgroundColor: ZEN_HEALING.COLORS.BACKGROUND.TERTIARY,
+                    width: featureIconSize,
+                    height: featureIconSize,
+                    borderRadius: featureIconSize * 0.3
+                  }
+                ]}
+              >
                 <Ionicons 
                   name="calendar" 
-                  size={24} 
+                  size={iconSize} 
                   color={ZEN_HEALING.COLORS.PRIMARY}
                   style={styles.icon}
                 />
               </View>
               <View style={styles.featureText}>
-                <Text style={styles.featureTitle}>Easy Booking</Text>
-                <Text style={styles.featureDescription}>
+                <Text style={[styles.featureTitle, { fontSize: Math.min(16, width * 0.04) }]}>Easy Booking</Text>
+                <Text style={[styles.featureDescription, { fontSize: Math.min(14, width * 0.035) }]}>
                   Schedule appointments with just a few taps
                 </Text>
               </View>
             </View>
             
             <View style={styles.featureItem}>
-              <View style={[styles.featureIcon, { backgroundColor: ZEN_HEALING.COLORS.BACKGROUND.TERTIARY }]}>
+              <View 
+                style={[
+                  styles.featureIcon, 
+                  { 
+                    backgroundColor: ZEN_HEALING.COLORS.BACKGROUND.TERTIARY,
+                    width: featureIconSize,
+                    height: featureIconSize,
+                    borderRadius: featureIconSize * 0.3
+                  }
+                ]}
+              >
                 <FontAwesome5 
                   name="spa" 
-                  size={24} 
+                  size={iconSize} 
                   color={ZEN_HEALING.COLORS.PRIMARY}
                   style={styles.icon}
                 />
               </View>
               <View style={styles.featureText}>
-                <Text style={styles.featureTitle}>Wellness Resources</Text>
-                <Text style={styles.featureDescription}>
+                <Text style={[styles.featureTitle, { fontSize: Math.min(16, width * 0.04) }]}>Wellness Resources</Text>
+                <Text style={[styles.featureDescription, { fontSize: Math.min(14, width * 0.035) }]}>
                   Access articles and tips for your wellness journey
                 </Text>
               </View>
@@ -98,15 +135,15 @@ const WelcomeScreen = ({ navigation }) => {
       <View style={styles.footer}>
         <GradientView
           colors={[ZEN_HEALING.COLORS.PRIMARY, ZEN_HEALING.COLORS.SECONDARY]}
-          style={styles.button}
+          style={[styles.button, { width: width * 0.9 }]}
         >
           <TouchableOpacity 
             style={styles.buttonContent}
             onPress={handleGetStarted}
             activeOpacity={0.8}
           >
-            <Text style={styles.buttonText}>Get Started</Text>
-            <Ionicons name="arrow-forward" size={20} color="white" style={styles.buttonIcon} />
+            <Text style={[styles.buttonText, { fontSize: Math.min(18, width * 0.045) }]}>Get Started</Text>
+            <Ionicons name="arrow-forward" size={Math.min(20, width * 0.05)} color="white" style={styles.buttonIcon} />
           </TouchableOpacity>
         </GradientView>
       </View>
@@ -127,20 +164,18 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    paddingTop: 20,
+    paddingTop: '5%',
   },
   illustration: {
     width: '90%',
-    height: 220,
   },
   contentCard: {
     backgroundColor: ZEN_HEALING.COLORS.BACKGROUND.PRIMARY,
     borderRadius: 24,
-    marginHorizontal: 20,
-    marginTop: -40,
-    paddingHorizontal: 24,
-    paddingTop: 32,
-    paddingBottom: 32,
+    marginHorizontal: '5%',
+    paddingHorizontal: '6%',
+    paddingTop: '8%',
+    paddingBottom: '8%',
     shadowColor: ZEN_HEALING.COLORS.SHADOW,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 1,
@@ -152,30 +187,27 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: ZEN_HEALING.COLORS.TEXT.TERTIARY,
     letterSpacing: 1.2,
-    marginBottom: 8,
+    marginBottom: '2%',
   },
   title: {
-    fontSize: 30,
     fontWeight: 'bold',
     color: ZEN_HEALING.COLORS.PRIMARY,
-    marginBottom: 16,
+    marginBottom: '4%',
   },
   description: {
-    fontSize: 16,
     color: ZEN_HEALING.COLORS.TEXT.SECONDARY,
     lineHeight: 24,
-    marginBottom: 24,
+    marginBottom: '6%',
   },
   divider: {
     height: 1,
     backgroundColor: ZEN_HEALING.COLORS.BORDER,
-    marginBottom: 24,
+    marginBottom: '6%',
   },
   featuresTitle: {
-    fontSize: 18,
     fontWeight: 'bold',
     color: ZEN_HEALING.COLORS.TEXT.PRIMARY,
-    marginBottom: 16,
+    marginBottom: '4%',
   },
   features: {
     width: '100%',
@@ -183,15 +215,12 @@ const styles = StyleSheet.create({
   featureItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: '5%',
   },
   featureIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 15,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: '4%',
   },
   icon: {
     alignSelf: 'center',
@@ -200,18 +229,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   featureTitle: {
-    fontSize: 16,
     fontWeight: 'bold',
     color: ZEN_HEALING.COLORS.TEXT.PRIMARY,
     marginBottom: 4,
   },
   featureDescription: {
-    fontSize: 14,
     color: ZEN_HEALING.COLORS.TEXT.SECONDARY,
     lineHeight: 20,
   },
   footer: {
-    padding: 20,
+    padding: '5%',
     backgroundColor: ZEN_HEALING.COLORS.BACKGROUND.PRIMARY,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
@@ -220,6 +247,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 10,
+    alignItems: 'center',
   },
   button: {
     borderRadius: 16,
@@ -233,7 +261,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: 'white',
-    fontSize: 18,
     fontWeight: 'bold',
   },
   buttonIcon: {
