@@ -46,6 +46,16 @@ const HomeStack = () => {
   );
 };
 
+// Articles stack
+const ArticlesStack = () => {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="ArticlesScreen" component={ArticlesScreen} />
+      <Stack.Screen name="ArticleDetailScreen" component={ArticleDetailScreen} />
+    </Stack.Navigator>
+  );
+};
+
 // Profile stack
 const ProfileStack = () => {
   return (
@@ -106,7 +116,7 @@ const MainTabNavigator = () => {
       />
       <Tab.Screen 
         name="Articles" 
-        component={ArticlesScreen}
+        component={ArticlesStack}
         options={{
           tabBarLabel: 'Articles',
           tabBarIcon: ({ color, size }) => (

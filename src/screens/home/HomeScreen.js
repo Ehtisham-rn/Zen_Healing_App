@@ -216,11 +216,15 @@ const HomeScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <View>
+        <View style={styles.headerTextContainer}>
           <Text style={styles.welcomeText}>Welcome to</Text>
-          <Text style={styles.appName}>Zen Healing Hub</Text>
+          <View style={styles.appNameContainer}>
+            <Text style={styles.appName}>Zen Healing</Text>
+            <View style={styles.appNameUnderline} />
+          </View>
+          <Text style={styles.tagline}>Your path to wellness & balance</Text>
         </View>
-        <TouchableOpacity style={styles.profileButton}>
+        <TouchableOpacity style={styles.profileButton} onPress={() => navigation.navigate('Profile')}>
           <Ionicons name="person-circle" size={40} color={ZEN_HEALING.COLORS.PRIMARY} />
         </TouchableOpacity>
       </View>
@@ -476,23 +480,53 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 24,
     paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: ZEN_HEALING.COLORS.BORDER + '40', // Translucent border
+  },
+  headerTextContainer: {
+    flex: 1,
   },
   welcomeText: {
     fontSize: 16,
     color: ZEN_HEALING.COLORS.TEXT.SECONDARY,
+    fontWeight: '500',
+  },
+  appNameContainer: {
+    marginTop: 4,
+    marginBottom: 4,
   },
   appName: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     color: ZEN_HEALING.COLORS.PRIMARY,
+    letterSpacing: 0.5,
+  },
+  appNameUnderline: {
+    height: 3,
+    width: 60,
+    backgroundColor: ZEN_HEALING.COLORS.ACCENT,
+    marginTop: 4,
+    borderRadius: 2,
+  },
+  tagline: {
+    fontSize: 14,
+    color: ZEN_HEALING.COLORS.TEXT.TERTIARY,
+    fontStyle: 'italic',
+    marginTop: 2,
   },
   profileButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: ZEN_HEALING.COLORS.BACKGROUND.TERTIARY,
     overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   content: {
     flex: 1,
